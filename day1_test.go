@@ -1,15 +1,14 @@
-package day1
+package adventofcode2018
 
 import (
 	"bufio"
-	"log"
 	"os"
 	"strconv"
 	"testing"
 )
 
 func frequencies() ([]int, error) {
-	f, err := os.Open("testdata/input")
+	f, err := os.Open("testdata/day1")
 	if err != nil {
 		return nil, err
 	}
@@ -27,37 +26,43 @@ func frequencies() ([]int, error) {
 	return fs, nil
 }
 
-func TestPart1(t *testing.T) {
+func TestDay1Part1(t *testing.T) {
 	fs, err := frequencies()
 	if err != nil {
 		t.Fatal(err)
 	}
-	sum := 0
+	want := 531
+	got := 0
 	for _, n := range fs {
-		sum += n
+		got += n
 	}
-	log.Printf("Sum: %d\n", sum)
+	if want != got {
+		t.Fatalf("want %v but got %v\n", want, got)
+	}
 }
 
-func TestPart2(t *testing.T) {
+func TestDay1Part2(t *testing.T) {
 	fs, err := frequencies()
 	if err != nil {
 		t.Fatal(err)
 	}
 	twice := make(map[int]bool)
-	sum := 0
+	want := 76787
+	got := 0
 	i := 0
 	for {
-		sum += fs[i]
-		if twice[sum] {
+		got += fs[i]
+		if twice[got] {
 			break
 		}
-		twice[sum] = true
+		twice[got] = true
 
 		i++
 		if i == len(fs) {
 			i = 0
 		}
 	}
-	log.Printf("Twice: %d\n", sum)
+	if want != got {
+		t.Fatalf("want %v but got %v\n", want, got)
+	}
 }
