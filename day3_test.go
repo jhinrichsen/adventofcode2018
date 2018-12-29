@@ -1,9 +1,8 @@
 package adventofcode2018
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"strconv"
 	"strings"
 	"testing"
@@ -105,6 +104,14 @@ func overlaps(square [][]int) int {
 	return n
 }
 
+func reset(square [][]int) {
+	for y := range square {
+		for x := range square[y] {
+			square[y][x] = 0
+		}
+	}
+}
+
 func dump(square [][]int) {
 	fmt.Println("----------------------------------")
 	for y := range square {
@@ -125,19 +132,27 @@ func day3(claims []claim) int {
 	return overlaps(square)
 }
 
+func claimsFromString(rep []string) ([]claim, error) {
+	var claims []claim
+	for _, v := range rep {
+		c, err := newClaim(v)
+		if err != nil {
+			return nil, err
+		}
+		claims = append(claims, c)
+	}
+	return claims, nil
+}
+
 func TestDay3Sample(t *testing.T) {
 	cs := []string{
 		"#1 @ 1,3: 4x4",
 		"#2 @ 3,1: 4x4",
 		"#3 @ 5,5: 2x2",
 	}
-	var claims []claim
-	for _, v := range cs {
-		c, err := newClaim(v)
-		if err != nil {
-			t.Fatal(err)
-		}
-		claims = append(claims, c)
+	claims, err := claimsFromString(cs)
+	if err != nil {
+		t.Fatal(err)
 	}
 	want := 4
 	got := day3(claims)
@@ -147,21 +162,86 @@ func TestDay3Sample(t *testing.T) {
 }
 
 func TestDay3(t *testing.T) {
-	f, err := os.Open("testdata/day3")
+	buf, err := ioutil.ReadFile("testdata/day3")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var claims []claim
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		c, err := newClaim(sc.Text())
-		if err != nil {
-			t.Fatal(err)
-		}
-		claims = append(claims, c)
+	lines := Lines(string(buf))
+	claims, err := claimsFromString(lines)
+	if err != nil {
+		t.Fatal(err)
 	}
 	want := 110827
 	got := day3(claims)
+	if want != got {
+		t.Fatalf("want %v but got %v\n", want, got)
+	}
+}
+
+// Compare each and every claim against all others
+func day3Part2(claims []claim) (int, error) {
+	hits := make(map[int]bool)
+	square := mkSquare(dimension(claims))
+	for i := range claims {
+		reset(square)
+		// apply all claims except for i
+		for j := range claims {
+			if i == j {
+				continue
+			}
+			fabric(square, claims[j])
+		}
+		o1 := overlaps(square)
+		fabric(square, claims[i])
+		o2 := overlaps(square)
+		if o1 == o2 {
+			hits[i] = true
+		}
+	}
+	if len(hits) == 1 {
+		for i := range hits {
+			// indices are 1 based
+			return i + 1, nil
+		}
+	}
+	return -1, fmt.Errorf("want exactly one hit but got %d: %v",
+		len(hits), hits)
+}
+
+func TestDay3Part2Sample(t *testing.T) {
+	cs := []string{
+		"#1 @ 1,3: 4x4",
+		"#2 @ 3,1: 4x4",
+		"#3 @ 5,5: 2x2",
+	}
+	claims, err := claimsFromString(cs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := 3
+	got, err := day3Part2(claims)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want != got {
+		t.Fatalf("want %v but got %v\n", want, got)
+	}
+}
+
+func TestDay3Part2(t *testing.T) {
+	buf, err := ioutil.ReadFile("testdata/day3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	claims, err := claimsFromString(Lines(string(buf)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := 2
+	got, err := day3Part2(claims)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
 	}
