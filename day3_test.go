@@ -3,6 +3,7 @@ package adventofcode2018
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
 	"testing"
@@ -178,34 +179,36 @@ func TestDay3(t *testing.T) {
 	}
 }
 
-// Compare each and every claim against all others
 func day3Part2(claims []claim) (int, error) {
-	hits := make(map[int]bool)
+	// assume all claims are disjoint and remove those that overlap
+	// disjoint := !overlap
+	disjoint := make(map[int]bool)
+	for i := range claims {
+		disjoint[i] = true
+	}
 	square := mkSquare(dimension(claims))
 	for i := range claims {
-		reset(square)
-		// apply all claims except for i
 		for j := range claims {
 			if i == j {
 				continue
 			}
+			reset(square)
+			fabric(square, claims[i])
 			fabric(square, claims[j])
-		}
-		o1 := overlaps(square)
-		fabric(square, claims[i])
-		o2 := overlaps(square)
-		if o1 == o2 {
-			hits[i] = true
+			if overlaps(square) > 0 {
+				delete(disjoint, i)
+				delete(disjoint, j)
+			}
 		}
 	}
-	if len(hits) == 1 {
-		for i := range hits {
-			// indices are 1 based
-			return i + 1, nil
-		}
+	for i := range disjoint {
+		log.Printf("index %d does not overlap with any other claim\n",
+			i+1)
 	}
-	return -1, fmt.Errorf("want exactly one hit but got %d: %v",
-		len(hits), hits)
+	for i := range disjoint {
+		return i + 1, nil
+	}
+	return -1, nil
 }
 
 func TestDay3Part2Sample(t *testing.T) {
@@ -229,6 +232,11 @@ func TestDay3Part2Sample(t *testing.T) {
 }
 
 func TestDay3Part2(t *testing.T) {
+	// TODO requires 2.233 s on a 2,3 GHz Intel Core i7
+	if testing.Short() {
+		t.Skip("skipping day 3 part 2 in short mode")
+	}
+
 	buf, err := ioutil.ReadFile("testdata/day3")
 	if err != nil {
 		t.Fatal(err)
@@ -237,7 +245,7 @@ func TestDay3Part2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 2
+	want := 116
 	got, err := day3Part2(claims)
 	if err != nil {
 		t.Fatal(err)
