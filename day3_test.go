@@ -61,7 +61,6 @@ func dimension(claims []claim) (int, int) {
 			my = y
 		}
 	}
-	fmt.Printf("dimension: %dx%d\n", mx, my)
 	return mx, my
 }
 
