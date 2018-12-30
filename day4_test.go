@@ -99,7 +99,6 @@ func day4Strategy1(r guardReport) int {
 	var max, sleepiestGuard int
 	for g, mr := range r {
 		n := minutesAsleep(mr)
-		log.Printf("guard %d sleeps total of %d minutes\n", g, n)
 		if n > max {
 			max = n
 			sleepiestGuard = g
