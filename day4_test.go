@@ -128,9 +128,6 @@ func TestDay4(t *testing.T) {
 	}
 	events := Lines(string(buf))
 	sort.Strings(events)
-	for _, s := range events {
-		log.Println(s)
-	}
 	want := 26281
 	got := day4(events)
 	if want != got {
