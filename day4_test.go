@@ -150,3 +150,50 @@ func Benchmark(b *testing.B) {
 		}
 	}
 }
+
+func TestDay4Part2Sample(t *testing.T) {
+	buf, err := ioutil.ReadFile("testdata/day4_sample")
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := Lines(string(buf))
+	want := 4455
+	got := day4Part2(events)
+	if want != got {
+		t.Fatalf("want %d but got %d", want, got)
+	}
+}
+
+func day4Part2(events []string) int {
+	r := day4Report(events)
+	return day4Strategy2(r)
+}
+
+func day4Strategy2(r guardReport) int {
+	var guard, minute, times int
+	for k, v := range r {
+		for j := range v {
+
+			if v[j] > times {
+				guard = k
+				minute = j
+				times = v[j]
+			}
+		}
+	}
+	return guard * minute
+}
+
+func TestDay4Part2(t *testing.T) {
+	buf, err := ioutil.ReadFile("testdata/day4")
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := Lines(string(buf))
+	sort.Strings(events)
+	want := 73001
+	got := day4Part2(events)
+	if want != got {
+		t.Fatalf("want %d but got %d", want, got)
+	}
+}
