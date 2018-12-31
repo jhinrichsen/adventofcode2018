@@ -2,7 +2,6 @@ package adventofcode2018
 
 import (
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 )
@@ -20,13 +19,11 @@ func reactive(p1, p2 byte) bool {
 func react(polymer string) string {
 	for i := 0; i < len(polymer)-1; i++ {
 		if reactive(polymer[i], polymer[i+1]) {
-			log.Printf("len=%d, reacting pos %d+%d\n", len(polymer), i, i+1)
 			polymer = polymer[0:i] + polymer[i+2:]
 			i -= 2
 			if i < 0 {
 				i = -1
 			}
-			log.Printf("new len=%d, backtracking to %d\n", len(polymer), i)
 		}
 	}
 	return polymer
