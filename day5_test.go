@@ -2,6 +2,7 @@ package adventofcode2018
 
 import (
 	"io/ioutil"
+	"math"
 	"strings"
 	"testing"
 )
@@ -52,6 +53,57 @@ func TestDay5(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := len(react(strings.TrimSpace(string(buf))))
+	if want != got {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+}
+
+func toLower(r rune) rune {
+	if 'A' <= r && r <= 'Z' {
+		r += 32
+	}
+	return r
+}
+
+func toUpper(r rune) rune {
+	if 'a' <= r && r <= 'z' {
+		r -= 32
+	}
+	return r
+}
+
+func unitTypes(polymer string) map[rune]bool {
+	m := make(map[rune]bool)
+	for _, v := range polymer {
+		m[toLower(v)] = true
+	}
+	return m
+}
+
+func reduce(polymer string, unitType rune) string {
+	polymer = strings.Replace(polymer, string(toLower(unitType)), "", -1)
+	polymer = strings.Replace(polymer, string(toUpper(unitType)), "", -1)
+	return polymer
+}
+
+func day5Part2(polymer string) int {
+	min := math.MaxInt32
+	for ut := range unitTypes(polymer) {
+		l := len(react(reduce(polymer, ut)))
+		if l < min {
+			min = l
+		}
+	}
+	return min
+}
+
+func TestDay5Part2(t *testing.T) {
+	buf, err := ioutil.ReadFile("testdata/day5")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := 6118
+	got := day5Part2(strings.TrimSpace(string(buf)))
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
