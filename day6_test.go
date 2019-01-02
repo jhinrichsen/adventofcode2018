@@ -213,3 +213,61 @@ func TestDay6(t *testing.T) {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
+
+func TestDay6Part2Sample(t *testing.T) {
+	cs := []string{
+		"1, 1",
+		"1, 6",
+		"8, 3",
+		"3, 4",
+		"5, 5",
+		"8, 9",
+	}
+
+	want := 16
+	ps, err := coordinates(cs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := day6Part2(ps, 32)
+	if want != got {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+}
+
+func day6Part2(ps []Point, limit int) int {
+	withinRegion := 0
+	mx, my := size(ps)
+	for y := 0; y < my; y++ {
+		for x := 0; x < mx; x++ {
+			dist := 0
+			p0 := Point{x, y}
+			for _, p := range ps {
+				dist += manhattanDistance(p0, p)
+				if dist > limit {
+					break
+				}
+			}
+			if dist < limit {
+				withinRegion++
+			}
+		}
+	}
+	return withinRegion
+}
+
+func TestDay6Part2(t *testing.T) {
+	buf, err := ioutil.ReadFile("testdata/day6")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ps, err := coordinates(Lines(string(buf)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := 38380
+	got := day6Part2(ps, 10000)
+	if want != got {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+}
