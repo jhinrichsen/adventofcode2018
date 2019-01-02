@@ -1,6 +1,7 @@
 package adventofcode2018
 
 import (
+	"bytes"
 	"io/ioutil"
 	"math"
 	"strings"
@@ -17,10 +18,10 @@ func reactive(p1, p2 byte) bool {
 	return false
 }
 
-func react(polymer string) string {
+func react(polymer []byte) []byte {
 	for i := 0; i < len(polymer)-1; i++ {
 		if reactive(polymer[i], polymer[i+1]) {
-			polymer = polymer[0:i] + polymer[i+2:]
+			polymer = append(polymer[0:i], polymer[i+2:]...)
 			i -= 2
 			if i < 0 {
 				i = -1
@@ -31,17 +32,17 @@ func react(polymer string) string {
 }
 
 func TestDay5Sample(t *testing.T) {
-	want := "dabCBAcaDA"
-	got := react("dabAcCaCBAcCcaDA")
-	if want != got {
+	want := []byte("dabCBAcaDA")
+	got := react([]byte("dabAcCaCBAcCcaDA"))
+	if !bytes.Equal(want, got) {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
 
 func TestDay5Sample2(t *testing.T) {
-	want := "x"
-	got := react("xabcCdDBADd")
-	if want != got {
+	want := []byte("x")
+	got := react([]byte("xabcCdDBADd"))
+	if !bytes.Equal(want, got) {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
@@ -52,7 +53,7 @@ func TestDay5(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := len(react(strings.TrimSpace(string(buf))))
+	got := len(react([]byte(strings.TrimSpace(string(buf)))))
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
@@ -89,7 +90,7 @@ func reduce(polymer string, unitType rune) string {
 func day5Part2(polymer string) int {
 	min := math.MaxInt32
 	for ut := range unitTypes(polymer) {
-		l := len(react(reduce(polymer, ut)))
+		l := len(react([]byte(reduce(polymer, ut))))
 		if l < min {
 			min = l
 		}
@@ -106,5 +107,16 @@ func TestDay5Part2(t *testing.T) {
 	got := day5Part2(strings.TrimSpace(string(buf)))
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
+	}
+}
+
+func BenchmarkDay5Part2(b *testing.B) {
+	buf, err := ioutil.ReadFile("testdata/day5")
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		_ = day5Part2(strings.TrimSpace(string(buf)))
 	}
 }
