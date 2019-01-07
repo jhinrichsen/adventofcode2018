@@ -18,7 +18,9 @@ func reactive(p1, p2 byte) bool {
 	return false
 }
 
-func react(polymer []byte) []byte {
+type reactFn func(polymer []byte) []byte
+
+func reactByResclicing(polymer []byte) []byte {
 	for i := 0; i < len(polymer)-1; i++ {
 		if reactive(polymer[i], polymer[i+1]) {
 			polymer = append(polymer[0:i], polymer[i+2:]...)
@@ -31,11 +33,63 @@ func react(polymer []byte) []byte {
 	return polymer
 }
 
+func reactByCreatingHoles(polymer []byte) []byte {
+	const hole = '.'
+	l := len(polymer) - 1
+	next := func(i int) int {
+		if i == len(polymer) {
+			return l
+		}
+		for i < len(polymer) && polymer[i] == hole {
+			i++
+		}
+		return i
+	}
+	prev := func(i int) int {
+		if i == -1 {
+			return 0
+		}
+		for i > 0 && polymer[i] == hole {
+			i--
+		}
+		return i
+	}
+	var holes int
+	for i := 0; i < l; {
+		if polymer[i] == hole {
+			i++
+			continue
+		}
+		j := next(i + 1)
+		if i != j && reactive(polymer[i], polymer[j]) {
+			polymer[i], polymer[j] = hole, hole
+			holes += 2
+			i = prev(i - 1)
+		} else {
+			i++
+		}
+	}
+	into := make([]byte, len(polymer)-holes)
+	var j int
+	for i := range polymer {
+		if polymer[i] != hole {
+			into[j] = polymer[i]
+			j++
+		}
+	}
+	return into
+}
+
+func react(polymer []byte) []byte {
+	return reactByResclicing(polymer)
+	// return reactByCreatingHoles(polymer)
+}
+
 func TestDay5Sample(t *testing.T) {
 	want := []byte("dabCBAcaDA")
 	got := react([]byte("dabAcCaCBAcCcaDA"))
 	if !bytes.Equal(want, got) {
-		t.Fatalf("want %v but got %v", want, got)
+		t.Fatalf("want %v but got %v", string(want), string(got))
 	}
 }
 
@@ -47,13 +101,25 @@ func TestDay5Sample2(t *testing.T) {
 	}
 }
 
-func TestDay5(t *testing.T) {
+func TestDay5CreatingHoles(t *testing.T) {
 	want := 11252
 	buf, err := ioutil.ReadFile("testdata/day5")
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := len(react([]byte(strings.TrimSpace(string(buf)))))
+	got := len(reactByCreatingHoles([]byte(strings.TrimSpace(string(buf)))))
+	if want != got {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+}
+
+func TestDay5Reslicing(t *testing.T) {
+	want := 11252
+	buf, err := ioutil.ReadFile("testdata/day5")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := len(reactByResclicing([]byte(strings.TrimSpace(string(buf)))))
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
@@ -110,13 +176,25 @@ func TestDay5Part2(t *testing.T) {
 	}
 }
 
-func BenchmarkDay5Part2(b *testing.B) {
+func BenchmarkDay5(b *testing.B) {
+	reacts := []struct {
+		name string
+		fn   reactFn
+	}{
+		{"reactByReslicing", reactByResclicing},
+		{"reactByCreatingHoles", reactByCreatingHoles},
+	}
 	buf, err := ioutil.ReadFile("testdata/day5")
 	if err != nil {
 		b.Fatal(err)
 	}
+	buf = []byte(strings.TrimSpace(string(buf)))
 	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		_ = day5Part2(strings.TrimSpace(string(buf)))
+	for _, r := range reacts {
+		b.Run(r.name, func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				_ = len(r.fn(buf))
+			}
+		})
 	}
 }
