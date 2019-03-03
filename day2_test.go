@@ -61,6 +61,9 @@ func TestDay2(t *testing.T) {
 		line := sc.Text()
 		IDs = append(IDs, line)
 	}
+	if sc.Err() != nil {
+		t.Fatal(sc.Err())
+	}
 	want := 5434
 	got := day2(IDs)
 	if want != got {
@@ -125,6 +128,9 @@ func TestDay2Part2(t *testing.T) {
 	for sc.Scan() {
 		line := sc.Text()
 		IDs = append(IDs, line)
+	}
+	if sc.Err() != nil {
+		t.Fatal(sc.Err())
 	}
 	want := "agimdjvlhedpsyoqfzuknpjwt"
 	got := day2Part2(IDs)

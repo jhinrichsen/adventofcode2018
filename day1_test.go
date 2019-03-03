@@ -23,7 +23,7 @@ func frequencies() ([]int, error) {
 		}
 		fs = append(fs, n)
 	}
-	return fs, nil
+	return fs, sc.Err()
 }
 
 func TestDay1Part1(t *testing.T) {
