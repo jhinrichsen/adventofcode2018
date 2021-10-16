@@ -1,0 +1,67 @@
+image:https://gitlab.com/jhinrichsen/adventofcode2018/badges/master/pipeline.svg[link="https://gitlab.com/jhinrichsen/adventofcode2018/-/commits/master",title="pipeline status"]
+image:https://gitlab.com/jhinrichsen/adventofcode2018/badges/master/coverage.svg[link="https://gitlab.com/jhinrichsen/adventofcode2018/-/commits/master",title="coverage report"]
+
+= Advent Of Code (AOC) 2018
+
+My take on the AOC, documenting my errors.
+
+Usually, i don't go for implementation speed, because that does not resonate
+well with me.
+
+My second highest priority is runtime performance, and priority number one is
+getting it right the first time.
+Therefore, i always provide complete coverage via unit tests.
+Go just makes this _so_ easy.
+
+This document does not include solutions so no worries to read it at any point
+in time.
+Solutions are hardcoded into unit tests, so you won't see any solutions as
+long as you avoid looking at `*_test.go` files.
+
+== Environment
+- Go 1.17.1
+- vim, vim-go, gopls, fed by an HHKB
+- VisualStudio Code for complex debugging scenarios
+- Fedora 34
+- AMD Ryzen 5 3400G on a Gigabyte B450
+
+The package name is `adventofcode2018`.
+
+Each day lives separately in a `day{{.02n}}.go` and `day{{.02n}}_test.go` file.
+Unit test data, both examples and puzzle input, is in
+`testdata/day{{.02n}}.txt`, and `testdata/day{{.02n}}_example.txt`.
+
+|====
+| Day | Tries
+|  1  | (no history available. I just do not remember, and haven't taken notes)
+|  1  |
+|  2  |
+|  2  |
+|  3  |
+|  3  |
+|  4  |
+|  5  |
+|  6  |
+|  7  |
+|  8  |
+|  9  |
+| 10  |
+| 11  |
+| 12  |
+| 13  |
+| 14  |
+| 15  |
+| 16  |
+| 17  |
+| 18  |
+| 19  |
+| 20  |
+| 21  |
+| 22  |
+| 23  |
+| 24  |
+| 25  |
+|====
+
+Numbers in (brackets) indicate tries so far (part #2 not solved yet).
+
