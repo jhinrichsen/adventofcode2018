@@ -3,7 +3,10 @@ image: golang:latest
 stages:
     - test
 
-run:
+test-job:
     stage: test
     script:
-      - go test
+      - go test -cover -short
+    coverage: '/coverage: \d+\.\d+%/'
+
+

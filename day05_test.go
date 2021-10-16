@@ -2,8 +2,8 @@ package adventofcode2018
 
 import (
 	"bytes"
-	"io/ioutil"
 	"math"
+	"os"
 	"strings"
 	"testing"
 )
@@ -85,7 +85,7 @@ func react(polymer []byte) []byte {
 	// return reactByCreatingHoles(polymer)
 }
 
-func TestDay5Sample(t *testing.T) {
+func TestDay05Example1(t *testing.T) {
 	want := []byte("dabCBAcaDA")
 	got := react([]byte("dabAcCaCBAcCcaDA"))
 	if !bytes.Equal(want, got) {
@@ -93,7 +93,7 @@ func TestDay5Sample(t *testing.T) {
 	}
 }
 
-func TestDay5Sample2(t *testing.T) {
+func TestDay05Example2(t *testing.T) {
 	want := []byte("x")
 	got := react([]byte("xabcCdDBADd"))
 	if !bytes.Equal(want, got) {
@@ -101,25 +101,21 @@ func TestDay5Sample2(t *testing.T) {
 	}
 }
 
-func TestDay5CreatingHoles(t *testing.T) {
-	want := 11252
-	buf, err := ioutil.ReadFile("testdata/day5")
-	if err != nil {
-		t.Fatal(err)
-	}
-	got := len(reactByCreatingHoles([]byte(strings.TrimSpace(string(buf)))))
-	if want != got {
-		t.Fatalf("want %v but got %v", want, got)
-	}
+func TestDay05Part1CreatingHoles(t *testing.T) {
+	day05Part1(t, reactByCreatingHoles)
 }
 
-func TestDay5Reslicing(t *testing.T) {
-	want := 11252
-	buf, err := ioutil.ReadFile("testdata/day5")
+func TestDay05Part1Reslicing(t *testing.T) {
+	day05Part1(t, reactByResclicing)
+}
+
+func day05Part1(t *testing.T, f func([]byte) []byte) {
+	const want = 9288
+	buf, err := os.ReadFile(filename(5))
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := len(reactByResclicing([]byte(strings.TrimSpace(string(buf)))))
+	got := len(f([]byte(strings.TrimSpace(string(buf)))))
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
@@ -153,7 +149,7 @@ func reduce(polymer string, unitType rune) string {
 	return polymer
 }
 
-func day5Part2(polymer string) int {
+func day05Part2(polymer string) int {
 	min := math.MaxInt32
 	for ut := range unitTypes(polymer) {
 		l := len(react([]byte(reduce(polymer, ut))))
@@ -164,19 +160,19 @@ func day5Part2(polymer string) int {
 	return min
 }
 
-func TestDay5Part2(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day5")
+func TestDay05Part2(t *testing.T) {
+	const want = 5844
+	buf, err := os.ReadFile(filename(5))
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 6118
-	got := day5Part2(strings.TrimSpace(string(buf)))
+	got := day05Part2(strings.TrimSpace(string(buf)))
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
 
-func BenchmarkDay5(b *testing.B) {
+func BenchmarkDay05Part1(b *testing.B) {
 	reacts := []struct {
 		name string
 		fn   reactFn
@@ -184,7 +180,7 @@ func BenchmarkDay5(b *testing.B) {
 		{"reactByReslicing", reactByResclicing},
 		{"reactByCreatingHoles", reactByCreatingHoles},
 	}
-	buf, err := ioutil.ReadFile("testdata/day5")
+	buf, err := os.ReadFile(filename(5))
 	if err != nil {
 		b.Fatal(err)
 	}

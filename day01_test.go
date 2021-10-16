@@ -1,37 +1,32 @@
 package adventofcode2018
 
 import (
-	"bufio"
-	"os"
 	"strconv"
 	"testing"
 )
 
 func frequencies() ([]int, error) {
-	f, err := os.Open("testdata/day1")
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
 	var fs []int
-	for sc.Scan() {
-		line := sc.Text()
+	lines, err := linesFromFilename(filename(1))
+	if err != nil {
+		return fs, err
+	}
+	for _, line := range lines {
 		n, err := strconv.Atoi(line)
 		if err != nil {
-			return nil, err
+			return fs, err
 		}
 		fs = append(fs, n)
 	}
-	return fs, sc.Err()
+	return fs, nil
 }
 
-func TestDay1Part1(t *testing.T) {
+func TestDay01Part1(t *testing.T) {
 	fs, err := frequencies()
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 531
+	want := 454
 	got := 0
 	for _, n := range fs {
 		got += n
@@ -41,13 +36,13 @@ func TestDay1Part1(t *testing.T) {
 	}
 }
 
-func TestDay1Part2(t *testing.T) {
+func TestDay01Part2(t *testing.T) {
 	fs, err := frequencies()
 	if err != nil {
 		t.Fatal(err)
 	}
 	twice := make(map[int]bool)
-	want := 76787
+	want := 566
 	got := 0
 	i := 0
 	for {

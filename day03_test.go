@@ -1,8 +1,6 @@
 package adventofcode2018
 
 import (
-	"fmt"
-	"io/ioutil"
 	"strconv"
 	"strings"
 	"testing"
@@ -104,25 +102,6 @@ func overlaps(square [][]int) int {
 	return n
 }
 
-func reset(square [][]int) {
-	for y := range square {
-		for x := range square[y] {
-			square[y][x] = 0
-		}
-	}
-}
-
-func dump(square [][]int) {
-	fmt.Println("----------------------------------")
-	for y := range square {
-		for x := range square[y] {
-			fmt.Printf("%d", square[y][x])
-		}
-		fmt.Println()
-	}
-	fmt.Println("----------------------------------")
-}
-
 func day3(claims []claim) int {
 	x, y := dimension(claims)
 	square := mkSquare(x, y)
@@ -144,7 +123,7 @@ func claimsFromString(rep []string) ([]claim, error) {
 	return claims, nil
 }
 
-func TestDay3Sample(t *testing.T) {
+func TestDay03Example(t *testing.T) {
 	cs := []string{
 		"#1 @ 1,3: 4x4",
 		"#2 @ 3,1: 4x4",
@@ -161,17 +140,16 @@ func TestDay3Sample(t *testing.T) {
 	}
 }
 
-func TestDay3(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day3")
+func TestDay03Part1(t *testing.T) {
+	const want = 118322
+	lines, err := linesFromFilename(filename(3))
 	if err != nil {
 		t.Fatal(err)
 	}
-	lines := Lines(string(buf))
 	claims, err := claimsFromString(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 110827
 	got := day3(claims)
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
@@ -208,7 +186,7 @@ func day3Part2(claims []claim) (int, error) {
 	return -1, nil
 }
 
-func TestDay3Part2Sample(t *testing.T) {
+func TestDay03Part2Example(t *testing.T) {
 	cs := []string{
 		"#1 @ 1,3: 4x4",
 		"#2 @ 3,1: 4x4",
@@ -228,16 +206,16 @@ func TestDay3Part2Sample(t *testing.T) {
 	}
 }
 
-func TestDay3Part2(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day3")
+func TestDay03Part2(t *testing.T) {
+	const want = 1178
+	lines, err := linesFromFilename(filename(3))
 	if err != nil {
 		t.Fatal(err)
 	}
-	claims, err := claimsFromString(Lines(string(buf)))
+	claims, err := claimsFromString(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 116
 	got, err := day3Part2(claims)
 	if err != nil {
 		t.Fatal(err)

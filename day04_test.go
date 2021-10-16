@@ -1,20 +1,18 @@
 package adventofcode2018
 
 import (
-	"io/ioutil"
 	"log"
 	"sort"
 	"strconv"
 	"testing"
 )
 
-func TestDay4Sample(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day4_sample")
+func TestDay04Example(t *testing.T) {
+	const want = 10 * 24
+	events, err := linesFromFilename(exampleFilename(4))
 	if err != nil {
 		t.Fatal(err)
 	}
-	events := Lines(string(buf))
-	want := 10 * 24
 	got := day4(events)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)
@@ -59,11 +57,6 @@ type minuteReport [60]int
 
 // a guard ID, and related minute report
 type guardReport map[int]minuteReport
-
-func newMinuteReport() minuteReport {
-	var r minuteReport
-	return r
-}
 
 func day4Report(events []string) guardReport {
 	guardReport := make(guardReport)
@@ -120,30 +113,28 @@ func day4(events []string) int {
 	return day4Strategy1(r)
 }
 
-func TestDay4(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day4")
+func TestDay04Part1(t *testing.T) {
+	const want = 85296
+	events, err := linesFromFilename(filename(4))
 	if err != nil {
 		t.Fatal(err)
 	}
-	events := Lines(string(buf))
 	sort.Strings(events)
-	want := 26281
 	got := day4(events)
 	if want != got {
 		t.Fatalf("want %d but got %d\n", want, got)
 	}
 }
 
-func Benchmark(b *testing.B) {
-	buf, err := ioutil.ReadFile("testdata/day4")
+func BenchmarkDay04(b *testing.B) {
+	const want = 85296
+	events, err := linesFromFilename(filename(4))
 	if err != nil {
 		b.Fatal(err)
 	}
-	events := Lines(string(buf))
 	sort.Strings(events)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		want := 703
 		got := day4(events)
 		if want != got {
 			b.Fatalf("want %d but got %d\n", want, got)
@@ -151,13 +142,12 @@ func Benchmark(b *testing.B) {
 	}
 }
 
-func TestDay4Part2Sample(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day4_sample")
+func TestDay04Part2Example(t *testing.T) {
+	const want = 4455
+	events, err := linesFromFilename(exampleFilename(4))
 	if err != nil {
 		t.Fatal(err)
 	}
-	events := Lines(string(buf))
-	want := 4455
 	got := day4Part2(events)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)
@@ -184,14 +174,13 @@ func day4Strategy2(r guardReport) int {
 	return guard * minute
 }
 
-func TestDay4Part2(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day4")
+func TestDay04Part2(t *testing.T) {
+	const want = 58559
+	events, err := linesFromFilename(filename(4))
 	if err != nil {
 		t.Fatal(err)
 	}
-	events := Lines(string(buf))
 	sort.Strings(events)
-	want := 73001
 	got := day4Part2(events)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)

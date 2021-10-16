@@ -1,8 +1,6 @@
 package adventofcode2018
 
 import (
-	"bufio"
-	"os"
 	"testing"
 )
 
@@ -34,6 +32,7 @@ func day2(boxIDs []string) int {
 }
 
 func TestSamplePart1(t *testing.T) {
+	const want = 12
 	ids := []string{
 		"abcdef",
 		"bababc",
@@ -43,29 +42,19 @@ func TestSamplePart1(t *testing.T) {
 		"abcdee",
 		"ababab",
 	}
-	want := 12
 	got := day2(ids)
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
 	}
 }
 
-func TestDay2(t *testing.T) {
-	f, err := os.Open("testdata/day2")
+func TestDay02Part1(t *testing.T) {
+	const want = 5704
+	lines, err := linesFromFilename(filename(2))
 	if err != nil {
 		t.Fatal(err)
 	}
-	var IDs []string
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		line := sc.Text()
-		IDs = append(IDs, line)
-	}
-	if sc.Err() != nil {
-		t.Fatal(sc.Err())
-	}
-	want := 5434
-	got := day2(IDs)
+	got := day2(lines)
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
 	}
@@ -82,7 +71,7 @@ func sameRunes(s1, s2 string) string {
 }
 
 func TestSameRunes(t *testing.T) {
-	want := "fgij"
+	const want = "fgij"
 	got := sameRunes("fghij", "fguij")
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
@@ -102,6 +91,7 @@ func day2Part2(IDs []string) string {
 }
 
 func TestSamplePart2(t *testing.T) {
+	const want = "fgij"
 	ids := []string{
 		"abcde",
 		"fghij",
@@ -111,29 +101,19 @@ func TestSamplePart2(t *testing.T) {
 		"axcye",
 		"wvxyz",
 	}
-	want := "fgij"
 	got := day2Part2(ids)
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
 	}
 }
 
-func TestDay2Part2(t *testing.T) {
-	f, err := os.Open("testdata/day2")
+func TestDay02Part2(t *testing.T) {
+	const want = "umdryabviapkozistwcnihjqx"
+	lines, err := linesFromFilename(filename(2))
 	if err != nil {
 		t.Fatal(err)
 	}
-	var IDs []string
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		line := sc.Text()
-		IDs = append(IDs, line)
-	}
-	if sc.Err() != nil {
-		t.Fatal(sc.Err())
-	}
-	want := "agimdjvlhedpsyoqfzuknpjwt"
-	got := day2Part2(IDs)
+	got := day2Part2(lines)
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
 	}

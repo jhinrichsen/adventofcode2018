@@ -1,7 +1,6 @@
 package adventofcode2018
 
 import (
-	"io/ioutil"
 	"math"
 	"strconv"
 	"strings"
@@ -140,7 +139,7 @@ func maxFinite(square [][]int, m map[int]bool) (int, int) {
 	return maxIndex, max
 }
 
-func day6(ps []Point) int {
+func day06(ps []Point) int {
 	square := mkEmptySquare(size(ps))
 	setup(square, ps)
 	fillManhattan(square, ps)
@@ -156,7 +155,7 @@ func day6(ps []Point) int {
 	return n
 }
 
-func TestDay6Sample(t *testing.T) {
+func TestDay06Sample(t *testing.T) {
 	cs := []string{
 		"1, 1",
 		"1, 6",
@@ -171,13 +170,13 @@ func TestDay6Sample(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := day6(ps)
+	got := day06(ps)
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
 
-func Test_manhattanDistance(t *testing.T) {
+func TestManhattanDistance(t *testing.T) {
 	type args struct {
 		p1 Point
 		p2 Point
@@ -198,23 +197,23 @@ func Test_manhattanDistance(t *testing.T) {
 	}
 }
 
-func TestDay6(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day6")
+func TestDay06Part1(t *testing.T) {
+	const want = 4342
+	lines, err := linesFromFilename(filename(6))
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 3276
-	ps, err := coordinates(Lines(string(buf)))
+	ps, err := coordinates(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := day6(ps)
+	got := day06(ps)
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
 
-func TestDay6Part2Sample(t *testing.T) {
+func TestDay06Part2Example(t *testing.T) {
 	cs := []string{
 		"1, 1",
 		"1, 6",
@@ -229,13 +228,13 @@ func TestDay6Part2Sample(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := day6Part2(ps, 32)
+	got := day06Part2(ps, 32)
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
 
-func day6Part2(ps []Point, limit int) int {
+func day06Part2(ps []Point, limit int) int {
 	withinRegion := 0
 	mx, my := size(ps)
 	for y := 0; y < my; y++ {
@@ -256,17 +255,17 @@ func day6Part2(ps []Point, limit int) int {
 	return withinRegion
 }
 
-func TestDay6Part2(t *testing.T) {
-	buf, err := ioutil.ReadFile("testdata/day6")
+func TestDay06Part2(t *testing.T) {
+	const want = 42966
+	lines, err := linesFromFilename(filename(6))
 	if err != nil {
 		t.Fatal(err)
 	}
-	ps, err := coordinates(Lines(string(buf)))
+	ps, err := coordinates(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := 38380
-	got := day6Part2(ps, 10000)
+	got := day06Part2(ps, 10000)
 	if want != got {
 		t.Fatalf("want %v but got %v", want, got)
 	}
