@@ -9,10 +9,7 @@ import (
 
 func TestDay04Example(t *testing.T) {
 	const want = 10 * 24
-	events, err := linesFromFilename(exampleFilename(4))
-	if err != nil {
-		t.Fatal(err)
-	}
+	events := linesFromFilename(t, exampleFilename(4))
 	got := day4(events)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)
@@ -115,10 +112,7 @@ func day4(events []string) int {
 
 func TestDay04Part1(t *testing.T) {
 	const want = 85296
-	events, err := linesFromFilename(filename(4))
-	if err != nil {
-		t.Fatal(err)
-	}
+	events := linesFromFilename(t, filename(4))
 	sort.Strings(events)
 	got := day4(events)
 	if want != got {
@@ -128,10 +122,7 @@ func TestDay04Part1(t *testing.T) {
 
 func BenchmarkDay04(b *testing.B) {
 	const want = 85296
-	events, err := linesFromFilename(filename(4))
-	if err != nil {
-		b.Fatal(err)
-	}
+	events := linesFromFilename(b, filename(4))
 	sort.Strings(events)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -144,10 +135,7 @@ func BenchmarkDay04(b *testing.B) {
 
 func TestDay04Part2Example(t *testing.T) {
 	const want = 4455
-	events, err := linesFromFilename(exampleFilename(4))
-	if err != nil {
-		t.Fatal(err)
-	}
+	events := linesFromFilename(t, exampleFilename(4))
 	got := day4Part2(events)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)
@@ -176,10 +164,7 @@ func day4Strategy2(r guardReport) int {
 
 func TestDay04Part2(t *testing.T) {
 	const want = 58559
-	events, err := linesFromFilename(filename(4))
-	if err != nil {
-		t.Fatal(err)
-	}
+	events := linesFromFilename(t, filename(4))
 	sort.Strings(events)
 	got := day4Part2(events)
 	if want != got {

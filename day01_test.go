@@ -5,12 +5,9 @@ import (
 	"testing"
 )
 
-func frequencies() ([]int, error) {
+func frequencies(t *testing.T) ([]int, error) {
 	var fs []int
-	lines, err := linesFromFilename(filename(1))
-	if err != nil {
-		return fs, err
-	}
+	lines := linesFromFilename(t, filename(1))
 	for _, line := range lines {
 		n, err := strconv.Atoi(line)
 		if err != nil {
@@ -22,7 +19,7 @@ func frequencies() ([]int, error) {
 }
 
 func TestDay01Part1(t *testing.T) {
-	fs, err := frequencies()
+	fs, err := frequencies(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +34,7 @@ func TestDay01Part1(t *testing.T) {
 }
 
 func TestDay01Part2(t *testing.T) {
-	fs, err := frequencies()
+	fs, err := frequencies(t)
 	if err != nil {
 		t.Fatal(err)
 	}

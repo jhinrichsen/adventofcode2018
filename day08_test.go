@@ -4,10 +4,7 @@ import "testing"
 
 func TestDay08Part1Example(t *testing.T) {
 	const want = 138
-	lines, err := linesFromFilename(exampleFilename(8))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, exampleFilename(8))
 	numbers, err := parseDay08(lines[0])
 	if err != nil {
 		t.Fatal(err)
@@ -20,10 +17,7 @@ func TestDay08Part1Example(t *testing.T) {
 
 func TestDay08Part1(t *testing.T) {
 	const want = 47464
-	lines, err := linesFromFilename(filename(8))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, filename(8))
 	numbers, err := parseDay08(lines[0])
 	if err != nil {
 		t.Fatal(err)

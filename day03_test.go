@@ -142,10 +142,7 @@ func TestDay03Example(t *testing.T) {
 
 func TestDay03Part1(t *testing.T) {
 	const want = 118322
-	lines, err := linesFromFilename(filename(3))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, filename(3))
 	claims, err := claimsFromString(lines)
 	if err != nil {
 		t.Fatal(err)
@@ -208,10 +205,7 @@ func TestDay03Part2Example(t *testing.T) {
 
 func TestDay03Part2(t *testing.T) {
 	const want = 1178
-	lines, err := linesFromFilename(filename(3))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, filename(3))
 	claims, err := claimsFromString(lines)
 	if err != nil {
 		t.Fatal(err)

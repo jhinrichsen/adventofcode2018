@@ -42,9 +42,9 @@ Implementations MUST NOT use `panic()`, instead use error handling.
 
 === Implement part 1 examples
 
-1. Follow all rules documented in comments in `day00.go` and `day00_test.go` they are part of the definition of done and MUST be followed.
-2. Copy `day00.go` template into `day{NN}.go`.
-3. Copy `day00_test.go` template into `day{NN}_test.go`.
+1. Follow all rules documented in comments in `.day.go` and `.day_test.go` they are part of the definition of done and MUST be followed.
+2. Copy `.day.go` template into `day{NN}.go`.
+3. Copy `.day_test.go` template into `day{NN}_test.go`.
 4. Remove all comments from `day{NN}.go` and `day{NN}_test.go`.
 5. Rename all data and code (struct, functions, test cases, benchmarks) from `00` to `{{NN}}`.
 6. Use the puzzle description from the website to implement all examples for part 1. Make sure to test all examples and cases described in the puzzle description.
