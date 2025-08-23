@@ -25,13 +25,20 @@ long as you avoid looking at `*_test.go` files.
 - Fedora 34
 - AMD Ryzen 5 3400G on a Gigabyte B450
 
+Updated 2025 to
+- Go 1.24
+- vim, vim-go, gopls, fed by an HHKB
+- Windsurf + GPT-5 low reasoning
+- Fedora 42
+- Framework Laptop 16"
+
 The package name is `adventofcode2018`.
 
 Each day lives separately in a `day{{.02n}}.go` and `day{{.02n}}_test.go` file.
 Unit test data, both examples and puzzle input, is in
 `testdata/day{{.02n}}.txt`, and `testdata/day{{.02n}}_example.txt`.
 
-|====
+|===
 | Day | Tries
 |  1  | (no history available. I just do not remember, and haven't taken notes)
 |  1  |
@@ -43,7 +50,7 @@ Unit test data, both examples and puzzle input, is in
 |  5  |
 |  6  |
 |  7  |
-|  8  |
+|  8  | | 1
 |  9  |
 | 10  |
 | 11  |
@@ -61,7 +68,7 @@ Unit test data, both examples and puzzle input, is in
 | 23  |
 | 24  |
 | 25  |
-|====
+|===
 
 Numbers in (brackets) indicate tries so far (part #2 not solved yet).
 

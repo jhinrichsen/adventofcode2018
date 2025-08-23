@@ -1,7 +1,6 @@
 package adventofcode2018
 
 import (
-	"log"
 	"sort"
 	"strconv"
 	"testing"
@@ -24,10 +23,7 @@ func dec(s string, i int) int {
 	var j int
 	for j = i; isDigit(s[j]); j++ {
 	}
-	n, err := strconv.Atoi(s[i:j])
-	if err != nil {
-		log.Fatal(err)
-	}
+	n, _ := strconv.Atoi(s[i:j])
 	return n
 }
 
