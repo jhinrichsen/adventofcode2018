@@ -1,0 +1,71 @@
+= Contributing rules
+
+The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”,
+“SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “NOT RECOMMENDED”, “MAY”, and
+“OPTIONAL” in this document are to be interpreted as described in BCP
+14 RFC2119 RFC8174 when, and only when, they appear in all capitals,
+as shown here.
+
+This file contains placeholders in the form {{placeholder}}.
+
+== Introduction
+
+The Advent Of Code is a yearly programming contest where participants solve puzzles.
+Since its invention in 2015, it starts Dec 1st and ends Dec 25th.
+For each day, participants are given a puzzle that needs to be solved.
+Puzzles are split into two parts, Part 1 and Part 2.
+
+== Part 1
+
+Each puzzle is publicly available from https://adventofcode/{{YEAR}}/day/{{day}}, e.g. https://adventofcode/2015/day/1 for the first puzzle.
+Each puzzle has a unique name, such as 'Not Quite Lisp' for day 1 of year 2015.
+The Puzzle description explains the problem and provides one or more examples to clarify the problem space.
+The site then provides a puzzle input, and expects the output in form of a single text input field.
+The examples are identical for all users, but puzzle input is user specific, and is only shown after login.
+When the user provides his solution, and it is correct, only then is part 2 unlocked and unveiled.
+
+== Part 2
+
+Part 2 is usually a derivation, generalization or specialisation of part 1.
+Often part 2 just uses a much larger range than part 1, so solutions that work for part 1 would run forever or just OOM.
+Part 1 SHOULD already aim for O(1) or O(n) instead of O(n^2) or similar.
+Part 2 again has one or more examples, and uses the same puzzle input from part 1.
+
+== How to implement day NN
+
+Priority number one is to get the solution right on the first try, so take special care that the solution to part 1 and part 2 are correct.
+Implementations MUST aim for maximum performance, and minimal memory allocation.
+Usual and common code conventions (maintainability, readability, DRY, Clean Code e.a.) DO NOT have to be applied.
+Implementations MUST calculate solutions and MUST NOT use pre-calculated results (`return 5347`).
+Implementations MUST NOT look up solutions on the internet.
+Implementations MUST NOT use `panic()`, instead use error handling.
+
+=== Implement part 1 examples
+
+1. Follow all rules documented in comments in `day00.go` and `day00_test.go` they are part of the definition of done and MUST be followed.
+2. Copy `day00.go` template into `day{NN}.go`.
+3. Copy `day00_test.go` template into `day{NN}_test.go`.
+4. Remove all comments from `day{NN}.go` and `day{NN}_test.go`.
+5. Rename all data and code (struct, functions, test cases, benchmarks) from `00` to `{{NN}}`.
+6. Use the puzzle description from the website to implement all examples for part 1. Make sure to test all examples and cases described in the puzzle description.
+7. Definition of done: all test cases succeed.
+8. Once the DoD is reached, continue with part 1 without user interaction.
+
+== Implement part 1
+
+1. Implement test case for part1 using the provided puzzle input.
+2. The first run of the test case for part 1 will fail, because the expected solution is unknown (want=?, got=X).
+3. On the second run, use want=X, and use the test condition on `want == got`.
+4. Definition of done: test case for part 1 succeeds.
+5. Stop here, and wait for user interaction. The solution for part 1 needs to be manually verified via the website.
+
+== Implement part 2 examples
+
+1. Use the puzzle description supplied locally (you cannot look it up as it requires login) to implement part 2 all examples.
+2. Definition of done: all test cases succeed.
+3. Once the DoD is reached, continue with part 2 without user interaction.
+
+== Implement part 2
+
+1. Implement test case for part 2 following the procedure described for part 1.
+
