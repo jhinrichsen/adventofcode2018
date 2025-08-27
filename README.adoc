@@ -101,3 +101,7 @@ Numbers in (brackets) indicate tries so far (part #2 not solved yet).
 == Day 24: Immune System Simulator 20XX
 == Day 25: Four-Dimensional Adventure
 
+== References
+
+https://github.com/Voltara/advent2018-fast[Advent of Code 2018 optimized C++ solutions]
+
