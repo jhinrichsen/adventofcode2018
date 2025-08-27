@@ -105,3 +105,5 @@ Numbers in (brackets) indicate tries so far (part #2 not solved yet).
 
 https://github.com/Voltara/advent2018-fast[Advent of Code 2018 optimized C++ solutions]
 
+https://www.forrestthewoods.com/blog/solving-advent-of-code-in-under-a-second/[Rust]
+
