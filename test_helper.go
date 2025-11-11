@@ -24,19 +24,22 @@ func testDayPart[P any, R comparable](
 	}
 }
 
-// benchDay is a generic benchmark function that reads input, parses it, and solves it.
-// - day: the day number (e.g., 8)
-// - parser: function that takes []byte and returns (parsedData, error)
-// - solver: function that takes parsedData and returns int
-func benchDay[T any](b *testing.B, day uint8, parser func([]byte) (T, error), solver func(T) int) {
+// benchDayPart is a generic benchmark helper for standard day part benchmarks.
+func benchDayPart[P any, R comparable](
+	b *testing.B,
+	day uint8,
+	part1 bool,
+	parser func([]string) (P, error),
+	solver func(P, bool) R,
+) {
 	b.Helper()
-	buf := file(b, day)
+	lines := linesFromFilename(b, filename(day))
 	b.ResetTimer()
 	for b.Loop() {
-		data, err := parser(buf)
+		puzzle, err := parser(lines)
 		if err != nil {
 			b.Fatal(err)
 		}
-		_ = solver(data)
+		_ = solver(puzzle, part1)
 	}
 }
