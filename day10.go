@@ -1,5 +1,11 @@
 package adventofcode2018
 
+import (
+	"strings"
+
+	"gitlab.com/jhinrichsen/aococr"
+)
+
 // Day10Puzzle represents the moving points of light.
 type Day10Puzzle struct {
 	points []point
@@ -65,11 +71,11 @@ func NewDay10(data []byte) (Day10Puzzle, error) {
 }
 
 // Day10 simulates the moving points and finds when they align to form a message.
-// Part 1: Returns the number of seconds when the message appears.
-func Day10(puzzle Day10Puzzle, part1 bool) uint {
+// Part 1: Returns the message text using OCR.
+func Day10(puzzle Day10Puzzle, part1 bool) string {
 	if !part1 {
 		// Part 2 not implemented yet
-		return 0
+		return ""
 	}
 
 	// Find the time when the bounding box area is minimized
@@ -120,5 +126,57 @@ func Day10(puzzle Day10Puzzle, part1 bool) uint {
 		}
 	}
 
-	return minTime
+	// Reset points and advance to the optimal time
+	copy(points, puzzle.points)
+	for range minTime {
+		for i := range len(points) {
+			points[i].x += points[i].vx
+			points[i].y += points[i].vy
+		}
+	}
+
+	// Calculate final bounding box
+	minX, maxX := points[0].x, points[0].x
+	minY, maxY := points[0].y, points[0].y
+
+	for i := range len(points) {
+		if points[i].x < minX {
+			minX = points[i].x
+		}
+		if points[i].x > maxX {
+			maxX = points[i].x
+		}
+		if points[i].y < minY {
+			minY = points[i].y
+		}
+		if points[i].y > maxY {
+			maxY = points[i].y
+		}
+	}
+
+	// Render as ASCII art
+	width := maxX - minX + 1
+	height := maxY - minY + 1
+
+	pointSet := make(map[[2]int]bool)
+	for i := range len(points) {
+		pointSet[[2]int{points[i].x - minX, points[i].y - minY}] = true
+	}
+
+	var grid strings.Builder
+	for y := range height {
+		for x := range width {
+			if pointSet[[2]int{x, y}] {
+				grid.WriteByte('#')
+			} else {
+				grid.WriteByte('.')
+			}
+		}
+		grid.WriteByte('\n')
+	}
+
+	// Use aococr to parse the message
+	charSet := map[rune]bool{'#': true}
+	message, _ := aococr.ParseLetters(grid.String(), charSet)
+	return message
 }
