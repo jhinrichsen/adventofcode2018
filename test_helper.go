@@ -2,27 +2,25 @@ package adventofcode2018
 
 import "testing"
 
-// testDay is a generic test function that reads input, parses it, solves it, and checks the result.
-// - day: the day number (e.g., 8)
-// - example: true for example input, false for actual input
-// - parser: function that takes []byte and returns (parsedData, error)
-// - solver: function that takes parsedData and returns int
-// - want: expected result
-func testDay[T any](t *testing.T, day uint8, example bool, parser func([]byte) (T, error), solver func(T) int, want int) {
+// testDayPart is a generic test helper for standard day part tests.
+func testDayPart[P any, R comparable](
+	t *testing.T,
+	day uint8,
+	filenameFunc func(uint8) string,
+	part1 bool,
+	parser func([]string) (P, error),
+	solver func(P, bool) R,
+	want R,
+) {
 	t.Helper()
-	var buf []byte
-	if example {
-		buf = exampleFile(t, day)
-	} else {
-		buf = file(t, day)
-	}
-	data, err := parser(buf)
+	lines := linesFromFilename(t, filenameFunc(day))
+	puzzle, err := parser(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := solver(data)
+	got := solver(puzzle, part1)
 	if want != got {
-		t.Fatalf("want %d but got %d", want, got)
+		t.Fatalf("want %v but got %v", want, got)
 	}
 }
 

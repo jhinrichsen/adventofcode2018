@@ -1,66 +1,72 @@
 package adventofcode2018
 
-// NewDay08 parses a whitespace-delimited sequence of positive integers from data.
-// It avoids strconv/strings for speed.
-func NewDay08(data []byte) ([]int, error) {
-    nums := make([]int, 0, 1024)
-    n := len(data)
-    i := 0
-    for i < n {
-        // skip whitespace
-        for i < n {
-            b := data[i]
-            if b > ' ' { // not space/tab/newline
-                break
-            }
-            i++
-        }
-        if i >= n {
-            break
-        }
-        // read digits
-        v := 0
-        for i < n {
-            b := data[i]
-            if b < '0' || b > '9' {
-                break
-            }
-            v = v*10 + int(b-'0')
-            i++
-        }
-        nums = append(nums, v)
-        // continue; next loop skips whitespace
-    }
-    return nums, nil
-}
+import "strings"
 
-func Day08Part1(numbers []int) (sum int) {
-	idx := 0
-	var readRec func()
-	readRec = func() {
-		children := numbers[idx]
-		idx++
-		nMeta := numbers[idx]
-		idx++
-		for children > 0 {
-			readRec()
-			children--
+// NewDay08 parses a whitespace-delimited sequence of positive integers from lines.
+// It avoids strconv for speed.
+func NewDay08(lines []string) ([]int, error) {
+	// Join all lines into single string and parse
+	data := []byte(strings.Join(lines, " "))
+	nums := make([]int, 0, 1024)
+	n := len(data)
+	i := 0
+	for i < n {
+		// skip whitespace
+		for i < n {
+			b := data[i]
+			if b > ' ' { // not space/tab/newline
+				break
+			}
+			i++
 		}
-		metaIdxStart := idx
-		metaIdxEnd := metaIdxStart + nMeta
-		for i := metaIdxStart; idx < metaIdxEnd; i++ {
-			sum += numbers[i]
-			idx++
+		if i >= n {
+			break
 		}
+		// read digits
+		v := 0
+		for i < n {
+			b := data[i]
+			if b < '0' || b > '9' {
+				break
+			}
+			v = v*10 + int(b-'0')
+			i++
+		}
+		nums = append(nums, v)
+		// continue; next loop skips whitespace
 	}
-	readRec()
-	return
+	return nums, nil
 }
 
-// Day08Part2 computes the value of the root node according to:
-// - If a node has no children, its value is the sum of its metadata entries.
-// - If a node has children, metadata entries are 1-based indices referencing child values; sum the referenced child values (ignore out-of-range, allow repeats, 0 references nothing).
-func Day08Part2(numbers []int) int {
+// Day08 solves day 8 for both parts.
+// Part 1: Sum all metadata entries.
+// Part 2: Compute the value of the root node where metadata entries reference child values.
+func Day08(numbers []int, part1 bool) uint {
+	if part1 {
+		idx := 0
+		sum := 0
+		var readRec func()
+		readRec = func() {
+			children := numbers[idx]
+			idx++
+			nMeta := numbers[idx]
+			idx++
+			for children > 0 {
+				readRec()
+				children--
+			}
+			metaIdxStart := idx
+			metaIdxEnd := metaIdxStart + nMeta
+			for i := metaIdxStart; idx < metaIdxEnd; i++ {
+				sum += numbers[i]
+				idx++
+			}
+		}
+		readRec()
+		return uint(sum)
+	}
+
+	// Part 2
 	idx := 0
 	var valueRec func() int
 	valueRec = func() int {
@@ -90,5 +96,5 @@ func Day08Part2(numbers []int) int {
 		}
 		return v
 	}
-	return valueRec()
+	return uint(valueRec())
 }
