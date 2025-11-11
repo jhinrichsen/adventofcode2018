@@ -25,6 +25,8 @@ func testDayPart[P any, R comparable](
 }
 
 // benchDayPart is a generic benchmark helper for standard day part benchmarks.
+// I/O is not measured, parsing and solving are measured.
+// No testing/verification is performed in benchmarks.
 func benchDayPart[P any, R comparable](
 	b *testing.B,
 	day uint8,
@@ -34,12 +36,8 @@ func benchDayPart[P any, R comparable](
 ) {
 	b.Helper()
 	lines := linesFromFilename(b, filename(day))
-	b.ResetTimer()
 	for b.Loop() {
-		puzzle, err := parser(lines)
-		if err != nil {
-			b.Fatal(err)
-		}
+		puzzle, _ := parser(lines)
 		_ = solver(puzzle, part1)
 	}
 }
