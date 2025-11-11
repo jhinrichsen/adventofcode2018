@@ -19,20 +19,23 @@ Solutions are hardcoded into unit tests, so you won't see any solutions as
 long as you avoid looking at `*_test.go` files.
 
 == Environment
-
-- Go 1.17.1
+- Go 1.25
 - vim, vim-go, gopls, fed by an HHKB
 - VisualStudio Code for complex debugging scenarios
 - Fedora 34
 - AMD Ryzen 5 3400G on a Gigabyte B450
 
-Updated 2025 to
+== Updates
 
+=== Update 1 (2025)
 - Go 1.24
 - vim, vim-go, gopls, fed by an HHKB
 - Windsurf + GPT-5 low reasoning
 - Fedora 42
 - Framework Laptop 16"
+
+=== Update 2
+- Go 1.25
 
 The package name is `adventofcode2018`.
 
