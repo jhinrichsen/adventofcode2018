@@ -31,11 +31,10 @@ func NewDay09(data []byte) (Day09Puzzle, error) {
 		return num
 	}
 
-	var puzzle Day09Puzzle
-	puzzle.players = number()
-	puzzle.lastMarble = number()
-
-	return puzzle, nil
+	return Day09Puzzle{
+		players:    number(),
+		lastMarble: number(),
+	}, nil
 }
 
 // Day09 simulates the marble game and returns the winning score.
