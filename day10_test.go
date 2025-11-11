@@ -8,7 +8,7 @@ func TestDay10Part1Example(t *testing.T) {
 }
 
 func TestDay10Part1(t *testing.T) {
-	testWithParserBytes(t, 10, file, true, NewDay10, Day10, "?PNNXF??")
+	testWithParserBytes(t, 10, file, true, NewDay10, Day10, "RPNNXFZR")
 }
 
 func BenchmarkDay10Part1(b *testing.B) {
