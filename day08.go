@@ -4,10 +4,10 @@ import "strings"
 
 // NewDay08 parses a whitespace-delimited sequence of positive integers from lines.
 // It avoids strconv for speed.
-func NewDay08(lines []string) ([]int, error) {
+func NewDay08(lines []string) ([]uint, error) {
 	// Join all lines into single string and parse
 	data := []byte(strings.Join(lines, " "))
-	nums := make([]int, 0, 1024)
+	nums := make([]uint, 0, len(data)/2) // rough estimate: each number is ~2 bytes
 	n := len(data)
 	i := 0
 	for i < n {
@@ -23,78 +23,126 @@ func NewDay08(lines []string) ([]int, error) {
 			break
 		}
 		// read digits
-		v := 0
+		v := uint(0)
 		for i < n {
 			b := data[i]
 			if b < '0' || b > '9' {
 				break
 			}
-			v = v*10 + int(b-'0')
+			v = v*10 + uint(b-'0')
 			i++
 		}
 		nums = append(nums, v)
-		// continue; next loop skips whitespace
 	}
 	return nums, nil
 }
 
-// Day08 solves day 8 for both parts.
+// Day08 solves day 8 for both parts using iterative (non-recursive) approach.
 // Part 1: Sum all metadata entries.
 // Part 2: Compute the value of the root node where metadata entries reference child values.
-func Day08(numbers []int, part1 bool) uint {
+func Day08(numbers []uint, part1 bool) uint {
+	idx := 0
+
 	if part1 {
-		idx := 0
-		sum := 0
-		var readRec func()
-		readRec = func() {
-			children := numbers[idx]
-			idx++
-			nMeta := numbers[idx]
-			idx++
-			for children > 0 {
-				readRec()
-				children--
-			}
-			metaIdxStart := idx
-			metaIdxEnd := metaIdxStart + nMeta
-			for i := metaIdxStart; idx < metaIdxEnd; i++ {
-				sum += numbers[i]
+		// Part 1: sum all metadata entries
+		sum := uint(0)
+
+		type item struct {
+			childrenLeft int
+			nMeta        int
+		}
+		stack := make([]item, 0, 64)
+
+		// Process root
+		nChildren := int(numbers[idx])
+		idx++
+		nMeta := int(numbers[idx])
+		idx++
+		stack = append(stack, item{nChildren, nMeta})
+
+		for len(stack) > 0 {
+			top := &stack[len(stack)-1]
+
+			if top.childrenLeft > 0 {
+				// Process next child
+				top.childrenLeft--
+				nChildren := int(numbers[idx])
 				idx++
+				nMeta := int(numbers[idx])
+				idx++
+				stack = append(stack, item{nChildren, nMeta})
+			} else {
+				// Read metadata using Go 1.25 range over int
+				for range top.nMeta {
+					sum += numbers[idx]
+					idx++
+				}
+				stack = stack[:len(stack)-1]
 			}
 		}
-		readRec()
-		return uint(sum)
+
+		return sum
 	}
 
-	// Part 2
-	idx := 0
-	var valueRec func() int
-	valueRec = func() int {
-		children := numbers[idx]
-		idx++
-		nMeta := numbers[idx]
-		idx++
-		if children == 0 {
-			v := 0
-			for i := 0; i < nMeta; i++ {
-				v += numbers[idx]
-				idx++
-			}
-			return v
-		}
-		childVals := make([]int, children)
-		for c := 0; c < children; c++ {
-			childVals[c] = valueRec()
-		}
-		v := 0
-		for i := 0; i < nMeta; i++ {
-			ref := numbers[idx]
-			idx++
-			if ref >= 1 && ref <= len(childVals) {
-				v += childVals[ref-1]
-			}
-		}
-		return v
+	// Part 2: compute value using stack-based approach (no recursion)
+	type item struct {
+		childrenLeft int
+		nMeta        int
+		childValues  []uint
 	}
-	return uint(valueRec())
+	stack := make([]item, 0, 64)
+
+	// Process root
+	nChildren := int(numbers[idx])
+	idx++
+	nMeta := int(numbers[idx])
+	idx++
+	stack = append(stack, item{nChildren, nMeta, make([]uint, 0, nChildren)})
+
+	for len(stack) > 0 {
+		top := &stack[len(stack)-1]
+
+		if top.childrenLeft > 0 {
+			// Process next child
+			top.childrenLeft--
+			nChildren := int(numbers[idx])
+			idx++
+			nMeta := int(numbers[idx])
+			idx++
+			stack = append(stack, item{nChildren, nMeta, make([]uint, 0, nChildren)})
+		} else {
+			// Compute value for this node
+			var value uint
+
+			if len(top.childValues) == 0 {
+				// No children: sum metadata using Go 1.25 range over int
+				for range top.nMeta {
+					value += numbers[idx]
+					idx++
+				}
+			} else {
+				// Has children: use metadata as 1-based indices
+				for range top.nMeta {
+					ref := numbers[idx]
+					idx++
+					if ref >= 1 && ref <= uint(len(top.childValues)) {
+						value += top.childValues[ref-1]
+					}
+				}
+			}
+
+			stack = stack[:len(stack)-1]
+
+			// Add value to parent if exists
+			if len(stack) > 0 {
+				stack[len(stack)-1].childValues = append(stack[len(stack)-1].childValues, value)
+			} else {
+				// This is the root - return its value
+				return value
+			}
+		}
+	}
+
+	return 0 // shouldn't reach here
 }
+
