@@ -36,6 +36,9 @@ long as you avoid looking at `*_test.go` files.
 
 === Update 2
 - Go 1.25
+- Claude Code
+- Claude Code Web (Research preview)
+- Intel i7 14700
 
 The package name is `adventofcode2018`.
 
