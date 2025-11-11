@@ -1,12 +1,8 @@
 package adventofcode2018
 
-import "strings"
-
-// NewDay08 parses a whitespace-delimited sequence of positive integers from lines.
-// It avoids strconv for speed.
-func NewDay08(lines []string) ([]uint, error) {
-	// Join all lines into single string and parse
-	data := []byte(strings.Join(lines, " "))
+// NewDay08 parses a whitespace-delimited sequence of positive integers from data.
+// It avoids strconv for speed and works directly with []byte.
+func NewDay08(data []byte) ([]uint, error) {
 	nums := make([]uint, 0, len(data)/2) // rough estimate: each number is ~2 bytes
 	n := len(data)
 	i := 0
@@ -145,4 +141,5 @@ func Day08(numbers []uint, part1 bool) uint {
 
 	return 0 // shouldn't reach here
 }
+
 
