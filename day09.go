@@ -34,16 +34,15 @@ func NewDay09(data []byte) (Day09Puzzle, error) {
 	return Day09Puzzle{players: players, lastMarble: lastMarble}, nil
 }
 
-// marble represents a node in the circular doubly-linked list.
-type marble struct {
-	value uint
-	prev  *marble
-	next  *marble
-}
-
 // Day09 simulates the marble game and returns the winning score.
 // Part 1: Play the game as described.
 func Day09(puzzle Day09Puzzle, part1 bool) uint {
+	// marble represents a node in the circular doubly-linked list.
+	type marble struct {
+		value uint
+		prev  *marble
+		next  *marble
+	}
 	if !part1 {
 		// Part 2 not implemented yet
 		return 0
