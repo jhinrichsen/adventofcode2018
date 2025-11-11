@@ -40,3 +40,26 @@ func Day08Part1(numbers []int) (sum int) {
 	readRec()
 	return
 }
+
+func Day08Part2(numbers []int) (sum int) {
+	idx := 0
+	var readRec func()
+	readRec = func() {
+		children := numbers[idx]
+		idx++
+		nMeta := numbers[idx]
+		idx++
+		for children > 0 {
+			readRec()
+			children--
+		}
+		metaIdxStart := idx
+		metaIdxEnd := metaIdxStart + nMeta
+		for i := metaIdxStart; idx < metaIdxEnd; i++ {
+			sum += numbers[i]
+			idx++
+		}
+	}
+	readRec()
+	return
+}
