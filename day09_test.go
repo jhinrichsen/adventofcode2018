@@ -16,6 +16,7 @@ func TestDay09Part1Examples(t *testing.T) {
 		{17, 1104, 2764},
 		{21, 6111, 54718},
 		{30, 5807, 37305},
+		{455, 71223, 384288},
 	}
 
 	for _, tt := range tests {
@@ -27,5 +28,9 @@ func TestDay09Part1Examples(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDay09Part1(t *testing.T) {
+	testWithParserBytes(t, 9, file, true, NewDay09, Day09, 384288)
 }
 
