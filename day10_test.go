@@ -3,8 +3,7 @@ package adventofcode2018
 import "testing"
 
 func TestDay10Part1Example(t *testing.T) {
-	// Example uses 8-row font which aococr doesn't support yet
-	testWithParserBytes(t, 10, exampleFile, true, NewDay10, Day10, "")
+	testWithParserBytes(t, 10, exampleFile, true, NewDay10, Day10, "HI")
 }
 
 func TestDay10Part1(t *testing.T) {
