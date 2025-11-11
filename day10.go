@@ -1,6 +1,7 @@
 package adventofcode2018
 
 import (
+	"fmt"
 	"strings"
 
 	"gitlab.com/jhinrichsen/aococr"
@@ -72,12 +73,8 @@ func NewDay10(data []byte) (Day10Puzzle, error) {
 
 // Day10 simulates the moving points and finds when they align to form a message.
 // Part 1: Returns the message text using OCR.
+// Part 2: Returns the number of seconds to wait for the message.
 func Day10(puzzle Day10Puzzle, part1 bool) string {
-	if !part1 {
-		// Part 2 not implemented yet
-		return ""
-	}
-
 	// Find the time when the bounding box area is minimized
 	// This is when the points form the message
 
@@ -175,7 +172,12 @@ func Day10(puzzle Day10Puzzle, part1 bool) string {
 		grid.WriteByte('\n')
 	}
 
-	// Use aococr to parse the message
+	// Part 2: Return the time
+	if !part1 {
+		return fmt.Sprintf("%d", minTime)
+	}
+
+	// Part 1: Use aococr to parse the message
 	charSet := map[rune]bool{'#': true}
 	message, _ := aococr.ParseLetters(grid.String(), charSet)
 	return message
