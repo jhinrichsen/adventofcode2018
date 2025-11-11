@@ -1,6 +1,9 @@
 package adventofcode2018
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestDay09Part1Examples(t *testing.T) {
 	tests := []struct {
@@ -16,12 +19,13 @@ func TestDay09Part1Examples(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		puzzle := Day09Puzzle{players: tt.players, lastMarble: tt.lastMarble}
-		got := Day09(puzzle, true)
-		if got != tt.want {
-			t.Errorf("Day09(%d players, %d marbles) = %d, want %d",
-				tt.players, tt.lastMarble, got, tt.want)
-		}
+		t.Run(fmt.Sprintf("%dp-%dm", tt.players, tt.lastMarble), func(t *testing.T) {
+			puzzle := Day09Puzzle{players: tt.players, lastMarble: tt.lastMarble}
+			got := Day09(puzzle, true)
+			if got != tt.want {
+				t.Fatalf("want %d but got %d", tt.want, got)
+			}
+		})
 	}
 }
 
