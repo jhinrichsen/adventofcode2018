@@ -1,9 +1,12 @@
 package adventofcode2018
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
-// testDayPart is a generic test helper for standard day part tests with []string parser.
-func testDayPart[P any, R comparable](
+// testWithParser is a generic test helper for day part tests using a parser and solver.
+func testWithParser[P any, R comparable](
 	t *testing.T,
 	day uint8,
 	filenameFunc func(uint8) string,
@@ -24,8 +27,8 @@ func testDayPart[P any, R comparable](
 	}
 }
 
-// testDayPartBytes is a generic test helper for day part tests with []byte parser.
-func testDayPartBytes[P any, R comparable](
+// testWithParserBytes is a generic test helper for day part tests using a []byte parser and solver.
+func testWithParserBytes[P any, R comparable](
 	t *testing.T,
 	day uint8,
 	fileFunc func(testing.TB, uint8) []byte,
@@ -46,10 +49,40 @@ func testDayPartBytes[P any, R comparable](
 	}
 }
 
-// benchDayPart is a generic benchmark helper for standard day part benchmarks with []string parser.
+// testSolver is a generic test helper for day part tests that work directly with []byte.
+func testSolver[R comparable](
+	t *testing.T,
+	day uint8,
+	filenameFunc func(uint8) string,
+	part1 bool,
+	solver func([]byte, bool) (R, error),
+	want R,
+) {
+	t.Helper()
+	buf := fileFromFilename(t, filenameFunc, day)
+	got, err := solver(buf, part1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want != got {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+}
+
+// fileFromFilename reads file bytes using a filename function and day number.
+func fileFromFilename(tb testing.TB, filenameFunc func(uint8) string, day uint8) []byte {
+	tb.Helper()
+	buf, err := os.ReadFile(filenameFunc(day))
+	if err != nil {
+		tb.Fatal(err)
+	}
+	return buf
+}
+
+// benchWithParser is a generic benchmark helper for day part benchmarks using a parser.
 // I/O is not measured, parsing and solving are measured.
 // No testing/verification is performed in benchmarks.
-func benchDayPart[P any, R comparable](
+func benchWithParser[P any, R comparable](
 	b *testing.B,
 	day uint8,
 	part1 bool,
@@ -64,10 +97,10 @@ func benchDayPart[P any, R comparable](
 	}
 }
 
-// benchDayPartBytes is a generic benchmark helper for day part benchmarks with []byte parser.
+// benchWithParserBytes is a generic benchmark helper for day part benchmarks with []byte parser.
 // I/O is not measured, parsing and solving are measured.
 // No testing/verification is performed in benchmarks.
-func benchDayPartBytes[P any, R comparable](
+func benchWithParserBytes[P any, R comparable](
 	b *testing.B,
 	day uint8,
 	part1 bool,
@@ -81,3 +114,20 @@ func benchDayPartBytes[P any, R comparable](
 		_ = solver(puzzle, part1)
 	}
 }
+
+// benchSolver is a generic benchmark helper for solvers that work directly with []byte.
+// I/O is not measured, solving is measured.
+// No testing/verification is performed in benchmarks.
+func benchSolver[R comparable](
+	b *testing.B,
+	day uint8,
+	part1 bool,
+	solver func([]byte, bool) (R, error),
+) {
+	b.Helper()
+	data := file(b, day)
+	for b.Loop() {
+		_, _ = solver(data, part1)
+	}
+}
+
