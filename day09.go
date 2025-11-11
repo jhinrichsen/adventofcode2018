@@ -13,29 +13,29 @@ func NewDay09(data []byte) (Day09Puzzle, error) {
 		return b >= '0' && b <= '9'
 	}
 
-	var players, lastMarble uint
 	n := len(data)
 	i := 0
 
-	// Parse players
-	for i < n && !isdigit(data[i]) {
-		i++
-	}
-	for i < n && isdigit(data[i]) {
-		players = players*10 + uint(data[i]-'0')
-		i++
-	}
-
-	// Parse last marble value
-	for i < n && !isdigit(data[i]) {
-		i++
-	}
-	for i < n && isdigit(data[i]) {
-		lastMarble = lastMarble*10 + uint(data[i]-'0')
-		i++
+	// number reads the next number from data starting at position i
+	number := func() uint {
+		// Skip non-digits
+		for i < n && !isdigit(data[i]) {
+			i++
+		}
+		// Read digits
+		num := uint(0)
+		for i < n && isdigit(data[i]) {
+			num = num*10 + uint(data[i]-'0')
+			i++
+		}
+		return num
 	}
 
-	return Day09Puzzle{players: players, lastMarble: lastMarble}, nil
+	var puzzle Day09Puzzle
+	puzzle.players = number()
+	puzzle.lastMarble = number()
+
+	return puzzle, nil
 }
 
 // Day09 simulates the marble game and returns the winning score.
