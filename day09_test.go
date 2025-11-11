@@ -34,3 +34,7 @@ func TestDay09Part1(t *testing.T) {
 	testWithParserBytes(t, 9, file, true, NewDay09, Day09, 384288)
 }
 
+func TestDay09Part2(t *testing.T) {
+	testWithParserBytes(t, 9, file, false, NewDay09, Day09, 3189426841)
+}
+

@@ -41,6 +41,7 @@ func NewDay09(data []byte) (Day09Puzzle, error) {
 
 // Day09 simulates the marble game and returns the winning score.
 // Part 1: Play the game as described.
+// Part 2: Last marble is 100 times larger.
 func Day09(puzzle Day09Puzzle, part1 bool) uint {
 	// marble represents a node in the circular doubly-linked list.
 	type marble struct {
@@ -48,9 +49,10 @@ func Day09(puzzle Day09Puzzle, part1 bool) uint {
 		prev  *marble
 		next  *marble
 	}
+
+	lastMarble := puzzle.lastMarble
 	if !part1 {
-		// Part 2 not implemented yet
-		return 0
+		lastMarble *= 100
 	}
 
 	// Initialize scores
@@ -62,7 +64,7 @@ func Day09(puzzle Day09Puzzle, part1 bool) uint {
 	current.next = current
 
 	// Simulate the game
-	for marbleNum := uint(1); marbleNum <= puzzle.lastMarble; marbleNum++ {
+	for marbleNum := uint(1); marbleNum <= lastMarble; marbleNum++ {
 		if marbleNum%23 == 0 {
 			// Special rule: marble is multiple of 23
 			player := (marbleNum - 1) % puzzle.players
