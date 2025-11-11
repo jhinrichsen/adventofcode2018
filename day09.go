@@ -1,5 +1,7 @@
 package adventofcode2018
 
+import "slices"
+
 // Day09Puzzle represents the marble game configuration.
 type Day09Puzzle struct {
 	players    uint
@@ -90,13 +92,5 @@ func Day09(puzzle Day09Puzzle, part1 bool) uint {
 		}
 	}
 
-	// Find highest score
-	var maxScore uint
-	for _, score := range scores {
-		if score > maxScore {
-			maxScore = score
-		}
-	}
-
-	return maxScore
+	return slices.Max(scores)
 }
