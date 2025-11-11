@@ -3,19 +3,19 @@ package adventofcode2018
 import "testing"
 
 func TestDay08Part1Example(t *testing.T) {
-	testWithParserBytes(t, 8, exampleFile, true, NewDay08, Day08, uint(138))
+	testWithParserBytes(t, 8, exampleFile, true, NewDay08, Day08, 138)
 }
 
 func TestDay08Part1(t *testing.T) {
-	testWithParserBytes(t, 8, file, true, NewDay08, Day08, uint(47464))
+	testWithParserBytes(t, 8, file, true, NewDay08, Day08, 47464)
 }
 
 func TestDay08Part2Example(t *testing.T) {
-	testWithParserBytes(t, 8, exampleFile, false, NewDay08, Day08, uint(66))
+	testWithParserBytes(t, 8, exampleFile, false, NewDay08, Day08, 66)
 }
 
 func TestDay08Part2(t *testing.T) {
-	testWithParserBytes(t, 8, file, false, NewDay08, Day08, uint(23054))
+	testWithParserBytes(t, 8, file, false, NewDay08, Day08, 23054)
 }
 
 func BenchmarkDay08Part1(b *testing.B) {
