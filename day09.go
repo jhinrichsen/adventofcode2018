@@ -9,24 +9,28 @@ type Day09Puzzle struct {
 // NewDay09 parses the marble game configuration from data.
 // Expected format: "N players; last marble is worth M points"
 func NewDay09(data []byte) (Day09Puzzle, error) {
+	isdigit := func(b byte) bool {
+		return b >= '0' && b <= '9'
+	}
+
 	var players, lastMarble uint
 	n := len(data)
 	i := 0
 
 	// Parse players
-	for i < n && (data[i] < '0' || data[i] > '9') {
+	for i < n && !isdigit(data[i]) {
 		i++
 	}
-	for i < n && data[i] >= '0' && data[i] <= '9' {
+	for i < n && isdigit(data[i]) {
 		players = players*10 + uint(data[i]-'0')
 		i++
 	}
 
 	// Parse last marble value
-	for i < n && (data[i] < '0' || data[i] > '9') {
+	for i < n && !isdigit(data[i]) {
 		i++
 	}
-	for i < n && data[i] >= '0' && data[i] <= '9' {
+	for i < n && isdigit(data[i]) {
 		lastMarble = lastMarble*10 + uint(data[i]-'0')
 		i++
 	}
