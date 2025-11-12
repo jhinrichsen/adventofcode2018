@@ -82,7 +82,7 @@ func parseGroup(line string, id int, army string) group {
 		i++
 	}
 	_, _ = fmt.Sscanf(parts[i], "%d", &g.hp)
-	i += 2 // skip "hit points"
+	i += 3 // skip "hit points" (the number itself, "hit", "points")
 
 	// Check for weaknesses/immunities in parentheses
 	if i < len(parts) && strings.HasPrefix(parts[i], "(") {
@@ -152,7 +152,15 @@ func Day24(puzzle Day24Puzzle, part1 bool) string {
 
 	// Simulate combat
 	for len(immune) > 0 && len(infect) > 0 {
-		// Create group map for easy lookup
+		// Get all groups for target selection
+		var allGroups []group
+		allGroups = append(allGroups, immune...)
+		allGroups = append(allGroups, infect...)
+
+		// Target selection phase
+		targets := selectTargets(allGroups)
+
+		// Create group map for easy lookup during attack
 		groupMap := make(map[string]*group)
 		for i := range immune {
 			key := fmt.Sprintf("immune-%d", immune[i].id)
@@ -162,15 +170,6 @@ func Day24(puzzle Day24Puzzle, part1 bool) string {
 			key := fmt.Sprintf("infection-%d", infect[i].id)
 			groupMap[key] = &infect[i]
 		}
-
-		// Get all groups for target selection
-		var allGroups []group
-		for _, g := range groupMap {
-			allGroups = append(allGroups, *g)
-		}
-
-		// Target selection phase
-		targets := selectTargets(allGroups)
 
 		// Track if any units died this round
 		unitsKilledThisRound := 0

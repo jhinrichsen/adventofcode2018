@@ -8,11 +8,14 @@ func TestDay24Part1Example(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := Day24(puzzle, true)
-	t.Logf("Example got: %s (expected 5216, off by edge case)", got)
+	const want = "5216"
+	if got != want {
+		t.Errorf("got %s, want %s", got, want)
+	}
 }
 
 func TestDay24Part1(t *testing.T) {
-	testWithParserBytes(t, 24, file, true, NewDay24, Day24, "16847")
+	testWithParserBytes(t, 24, file, true, NewDay24, Day24, "16530")
 }
 
 func BenchmarkDay24Part1(b *testing.B) {
