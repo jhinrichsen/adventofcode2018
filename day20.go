@@ -65,11 +65,6 @@ func Day20(puzzle Day20Puzzle, part1 bool) string {
 
 // buildMap constructs the map by parsing the regex and following all paths.
 func buildMap(regex string, doors map[pos]map[pos]bool) {
-	type state struct {
-		pos   pos
-		index int
-	}
-
 	// Stack for handling branches
 	var stack [][]pos
 

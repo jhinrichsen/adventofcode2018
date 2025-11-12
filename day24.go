@@ -71,7 +71,7 @@ func parseGroup(line string, id int, army string) group {
 	i := 0
 
 	// Parse units
-	fmt.Sscanf(parts[i], "%d", &g.units)
+	_, _ = fmt.Sscanf(parts[i], "%d", &g.units)
 
 	// Find "with" to get HP
 	for i < len(parts) {
@@ -81,7 +81,7 @@ func parseGroup(line string, id int, army string) group {
 		}
 		i++
 	}
-	fmt.Sscanf(parts[i], "%d", &g.hp)
+	_, _ = fmt.Sscanf(parts[i], "%d", &g.hp)
 	i += 2 // skip "hit points"
 
 	// Check for weaknesses/immunities in parentheses
@@ -120,7 +120,7 @@ func parseGroup(line string, id int, army string) group {
 		}
 		i++
 	}
-	fmt.Sscanf(parts[i], "%d", &g.attackDmg)
+	_, _ = fmt.Sscanf(parts[i], "%d", &g.attackDmg)
 	i++
 	g.attackType = parts[i]
 
@@ -132,7 +132,7 @@ func parseGroup(line string, id int, army string) group {
 		}
 		i++
 	}
-	fmt.Sscanf(parts[i], "%d", &g.initiative)
+	_, _ = fmt.Sscanf(parts[i], "%d", &g.initiative)
 
 	return g
 }

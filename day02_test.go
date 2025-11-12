@@ -5,11 +5,11 @@ import (
 )
 
 func appear1(ID string, n int) bool {
-	occurences := make(map[rune]int)
+	occurrences := make(map[rune]int)
 	for _, v := range ID {
-		occurences[v]++
+		occurrences[v]++
 	}
-	for _, v := range occurences {
+	for _, v := range occurrences {
 		if v == n {
 			return true
 		}
