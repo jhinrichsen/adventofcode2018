@@ -18,98 +18,134 @@ func TestDay24Part1Example(t *testing.T) {
 	}
 }
 
-func TestDay24ExampleRound1(t *testing.T) {
+func TestDay24ExampleTimeline(t *testing.T) {
 	puzzle, err := NewDay24(exampleFile(t, 24))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Verify initial state
-	if len(puzzle.immuneSystem) != 2 {
-		t.Errorf("expected 2 immune groups, got %d", len(puzzle.immuneSystem))
-	}
-	if puzzle.immuneSystem[0].units != 17 {
-		t.Errorf("immune group 1: expected 17 units, got %d", puzzle.immuneSystem[0].units)
-	}
-	if puzzle.immuneSystem[1].units != 989 {
-		t.Errorf("immune group 2: expected 989 units, got %d", puzzle.immuneSystem[1].units)
-	}
-	if puzzle.infection[0].units != 801 {
-		t.Errorf("infection group 1: expected 801 units, got %d", puzzle.infection[0].units)
-	}
-	if puzzle.infection[1].units != 4485 {
-		t.Errorf("infection group 2: expected 4485 units, got %d", puzzle.infection[1].units)
+	// Expected state after each round from AoC description
+	tests := []struct {
+		round       int
+		immune1     int
+		immune2     int
+		infection1  int
+		infection2  int
+	}{
+		{0, 17, 989, 801, 4485},    // Initial
+		{1, 0, 905, 797, 4434},      // After round 1
+		{2, 0, 761, 793, 4434},      // After round 2
+		{3, 0, 618, 789, 4434},      // After round 3
+		{4, 0, 475, 786, 4434},      // After round 4
+		{5, 0, 333, 784, 4434},      // After round 5
+		{6, 0, 191, 783, 4434},      // After round 6
+		{7, 0, 49, 782, 4434},       // After round 7
+		{8, 0, 0, 782, 4434},        // Final: immune eliminated
 	}
 
-	// Simulate one round
 	immune := make([]group, len(puzzle.immuneSystem))
 	copy(immune, puzzle.immuneSystem)
 	infect := make([]group, len(puzzle.infection))
 	copy(infect, puzzle.infection)
 
-	var allGroups []group
-	allGroups = append(allGroups, immune...)
-	allGroups = append(allGroups, infect...)
-
-	targets := selectTargets(allGroups)
-
-	groupMap := make(map[string]*group)
-	for i := range immune {
-		key := fmt.Sprintf("immune-%d", immune[i].id)
-		groupMap[key] = &immune[i]
-	}
-	for i := range infect {
-		key := fmt.Sprintf("infection-%d", infect[i].id)
-		groupMap[key] = &infect[i]
-	}
-
-	sort.Slice(allGroups, func(i, j int) bool {
-		return allGroups[i].initiative > allGroups[j].initiative
-	})
-
-	for _, attacker := range allGroups {
-		attackerKey := fmt.Sprintf("%s-%d", attacker.army, attacker.id)
-		attackerPtr := groupMap[attackerKey]
-		if attackerPtr == nil || attackerPtr.units <= 0 {
-			continue
-		}
-
-		targetID := targets[attackerKey]
-		if targetID == "" {
-			continue
-		}
-
-		defenderPtr := groupMap[targetID]
-		if defenderPtr != nil && defenderPtr.units > 0 {
-			damage := calculateDamage(*attackerPtr, *defenderPtr)
-			unitsKilled := damage / defenderPtr.hp
-			if unitsKilled > defenderPtr.units {
-				unitsKilled = defenderPtr.units
+	for _, tt := range tests {
+		// Check current state
+		var immune1Units, immune2Units, infect1Units, infect2Units int
+		for _, g := range immune {
+			if g.units > 0 {
+				if g.id == 1 {
+					immune1Units = g.units
+				} else if g.id == 2 {
+					immune2Units = g.units
+				}
 			}
-			defenderPtr.units -= unitsKilled
 		}
-	}
+		for _, g := range infect {
+			if g.units > 0 {
+				if g.id == 1 {
+					infect1Units = g.units
+				} else if g.id == 2 {
+					infect2Units = g.units
+				}
+			}
+		}
 
-	// Verify state after round 1 (from AoC description)
-	// Expected: Immune Group 2: 905, Infection Group 1: 797, Infection Group 2: 4434
-	g := groupMap["immune-1"]
-	if g.units != 0 {
-		t.Errorf("after round 1: immune group 1 should be eliminated, got %d units", g.units)
-	}
+		if immune1Units != tt.immune1 || immune2Units != tt.immune2 ||
+		   infect1Units != tt.infection1 || infect2Units != tt.infection2 {
+			t.Errorf("round %d: got immune=[%d,%d] infection=[%d,%d], want immune=[%d,%d] infection=[%d,%d]",
+				tt.round, immune1Units, immune2Units, infect1Units, infect2Units,
+				tt.immune1, tt.immune2, tt.infection1, tt.infection2)
+		}
 
-	g = groupMap["immune-2"]
-	if g.units != 905 {
-		t.Errorf("after round 1: immune group 2 expected 905 units, got %d", g.units)
-	}
+		// Stop if we've reached the end
+		if len(immune) == 0 || len(infect) == 0 {
+			break
+		}
 
-	g = groupMap["infection-1"]
-	if g.units != 797 {
-		t.Errorf("after round 1: infection group 1 expected 797 units, got %d", g.units)
-	}
+		// Simulate one round
+		var allGroups []group
+		allGroups = append(allGroups, immune...)
+		allGroups = append(allGroups, infect...)
 
-	g = groupMap["infection-2"]
-	if g.units != 4434 {
-		t.Errorf("after round 1: infection group 2 expected 4434 units, got %d", g.units)
+		targets := selectTargets(allGroups)
+
+		groupMap := make(map[string]*group)
+		for i := range immune {
+			key := fmt.Sprintf("immune-%d", immune[i].id)
+			groupMap[key] = &immune[i]
+		}
+		for i := range infect {
+			key := fmt.Sprintf("infection-%d", infect[i].id)
+			groupMap[key] = &infect[i]
+		}
+
+		sort.Slice(allGroups, func(i, j int) bool {
+			return allGroups[i].initiative > allGroups[j].initiative
+		})
+
+		unitsKilledThisRound := 0
+		for _, attacker := range allGroups {
+			attackerKey := fmt.Sprintf("%s-%d", attacker.army, attacker.id)
+			attackerPtr := groupMap[attackerKey]
+			if attackerPtr == nil || attackerPtr.units <= 0 {
+				continue
+			}
+
+			targetID := targets[attackerKey]
+			if targetID == "" {
+				continue
+			}
+
+			defenderPtr := groupMap[targetID]
+			if defenderPtr != nil && defenderPtr.units > 0 {
+				damage := calculateDamage(*attackerPtr, *defenderPtr)
+				unitsKilled := damage / defenderPtr.hp
+				if unitsKilled > defenderPtr.units {
+					unitsKilled = defenderPtr.units
+				}
+				defenderPtr.units -= unitsKilled
+				unitsKilledThisRound += unitsKilled
+			}
+		}
+
+		if unitsKilledThisRound == 0 {
+			break
+		}
+
+		// Update armies
+		immune = nil
+		infect = nil
+		for _, g := range groupMap {
+			if g.units > 0 {
+				if g.army == "immune" {
+					immune = append(immune, *g)
+				} else {
+					infect = append(infect, *g)
+				}
+			}
+		}
+		sort.Slice(immune, func(i, j int) bool { return immune[i].id < immune[j].id })
+		sort.Slice(infect, func(i, j int) bool { return infect[i].id < infect[j].id })
 	}
 }
 
