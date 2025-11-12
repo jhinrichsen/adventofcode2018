@@ -7,19 +7,43 @@ type Day18Puzzle struct {
 	height int
 }
 
-// NewDay18 parses the lumber collection area grid from lines.
-func NewDay18(lines []string) (Day18Puzzle, error) {
-	if len(lines) == 0 {
+// NewDay18 parses the lumber collection area grid from raw bytes.
+func NewDay18(data []byte) (Day18Puzzle, error) {
+	if len(data) == 0 {
 		return Day18Puzzle{}, nil
 	}
 
-	width := len(lines[0])
-	height := len(lines)
+	// Find dimensions by counting first line and total lines
+	width := 0
+	for i := 0; i < len(data); i++ {
+		if data[i] == '\n' || data[i] == '\r' {
+			break
+		}
+		width++
+	}
 
-	// Create flat grid without newlines
-	grid := make([]byte, 0, width*height)
-	for _, line := range lines {
-		grid = append(grid, []byte(line)...)
+	if width == 0 {
+		return Day18Puzzle{}, nil
+	}
+
+	// Count lines and build grid without newlines
+	grid := make([]byte, 0, len(data))
+	height := 0
+	for i := 0; i < len(data); i++ {
+		if data[i] == '\n' || data[i] == '\r' {
+			if i+1 < len(data) && data[i] == '\r' && data[i+1] == '\n' {
+				i++ // Skip \r\n
+			}
+			if len(grid) > height*width {
+				height++
+			}
+		} else {
+			grid = append(grid, data[i])
+		}
+	}
+	// Count the last line if it doesn't end with newline
+	if len(grid) > height*width {
+		height++
 	}
 
 	return Day18Puzzle{
@@ -99,47 +123,44 @@ func resourceValue(grid []byte) uint {
 	return trees * lumberyards
 }
 
-// Day18Part1 simulates 10 minutes and returns the resource value.
-func Day18Part1(p Day18Puzzle) uint {
+// Day18 is a unified solver for both parts.
+// Part 1: simulates 10 minutes.
+// Part 2: simulates 1000000000 minutes using cycle detection.
+func Day18(p Day18Puzzle, part1 bool) uint {
 	current := make([]byte, len(p.grid))
 	copy(current, p.grid)
 
-	for range 10 {
-		current = step(current, p.width, p.height)
+	target := 10
+	if !part1 {
+		target = 1000000000
 	}
 
-	return resourceValue(current)
-}
+	// For part 2, track seen states to detect cycles
+	var seen map[string]int
+	if !part1 {
+		seen = make(map[string]int)
+	}
 
-// Day18Part2 simulates 1000000000 minutes using cycle detection.
-func Day18Part2(p Day18Puzzle) uint {
-	current := make([]byte, len(p.grid))
-	copy(current, p.grid)
-
-	// Track seen states to detect cycles
-	seen := make(map[string]int)
 	minute := 0
-	target := 1000000000
-
 	for minute < target {
-		// Convert current state to string for comparison
-		state := string(current)
-
-		// Check if we've seen this state before
-		if prevMinute, found := seen[state]; found {
-			// Found a cycle!
-			cycleLength := minute - prevMinute
-			// How many complete cycles can we skip?
-			remaining := target - minute
-			fullCycles := remaining / cycleLength
-			minute += fullCycles * cycleLength
-
-			// Clear the cache and continue simulating the remainder
-			seen = make(map[string]int)
+		// For part 2, check for cycles
+		if !part1 {
+			state := string(current)
+			if prevMinute, found := seen[state]; found {
+				// Found a cycle!
+				cycleLength := minute - prevMinute
+				remaining := target - minute
+				fullCycles := remaining / cycleLength
+				minute += fullCycles * cycleLength
+				// Clear the cache and continue simulating the remainder
+				seen = make(map[string]int)
+			}
+			if minute < target {
+				seen[state] = minute
+			}
 		}
 
 		if minute < target {
-			seen[state] = minute
 			current = step(current, p.width, p.height)
 			minute++
 		}
