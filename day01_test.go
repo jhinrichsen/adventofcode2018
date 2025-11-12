@@ -1,60 +1,21 @@
 package adventofcode2018
 
 import (
-	"strconv"
 	"testing"
 )
 
-func frequencies(t *testing.T) ([]int, error) {
-	var fs []int
-	lines := linesFromFilename(t, filename(1))
-	for _, line := range lines {
-		n, err := strconv.Atoi(line)
-		if err != nil {
-			return fs, err
-		}
-		fs = append(fs, n)
-	}
-	return fs, nil
+func TestDay01Part1(t *testing.T) {
+	testWithParserLines(t, 1, true, NewDay01, Day01, 454)
 }
 
-func TestDay01Part1(t *testing.T) {
-	fs, err := frequencies(t)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := 454
-	got := 0
-	for _, n := range fs {
-		got += n
-	}
-	if want != got {
-		t.Fatalf("want %v but got %v\n", want, got)
-	}
+func BenchmarkDay01Part1(b *testing.B) {
+	benchWithParserLines(b, 1, true, NewDay01, Day01)
 }
 
 func TestDay01Part2(t *testing.T) {
-	fs, err := frequencies(t)
-	if err != nil {
-		t.Fatal(err)
-	}
-	twice := make(map[int]bool)
-	want := 566
-	got := 0
-	i := 0
-	for {
-		got += fs[i]
-		if twice[got] {
-			break
-		}
-		twice[got] = true
+	testWithParserLines(t, 1, false, NewDay01, Day01, 566)
+}
 
-		i++
-		if i == len(fs) {
-			i = 0
-		}
-	}
-	if want != got {
-		t.Fatalf("want %v but got %v\n", want, got)
-	}
+func BenchmarkDay01Part2(b *testing.B) {
+	benchWithParserLines(b, 1, false, NewDay01, Day01)
 }
