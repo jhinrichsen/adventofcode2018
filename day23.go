@@ -294,13 +294,7 @@ func findBestPosition(bots []nanobot) uint {
 	}
 
 	// Find the smallest power of 2 that contains the bounding box
-	maxDim := maxX - minX
-	if d := maxY - minY; d > maxDim {
-		maxDim = d
-	}
-	if d := maxZ - minZ; d > maxDim {
-		maxDim = d
-	}
+	maxDim := max(maxX-minX, maxY-minY, maxZ-minZ)
 	size := uint(1 << bits.Len(uint(maxDim)))
 
 	// Start with the initial region
