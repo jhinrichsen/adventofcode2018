@@ -33,6 +33,14 @@ func TestDay20Part1(t *testing.T) {
 	testWithParserBytes(t, 20, file, true, NewDay20, Day20, "3755")
 }
 
+func TestDay20Part2(t *testing.T) {
+	testWithParserBytes(t, 20, file, false, NewDay20, Day20, "8627")
+}
+
 func BenchmarkDay20Part1(b *testing.B) {
 	benchWithParserBytes(b, 20, true, NewDay20, Day20)
+}
+
+func BenchmarkDay20Part2(b *testing.B) {
+	benchWithParserBytes(b, 20, false, NewDay20, Day20)
 }
