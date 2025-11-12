@@ -139,7 +139,7 @@ func TestDayXXPart1(t *testing.T) {
         t.Fatal(err)
     }
     got := DayXX(puzzle, true)
-    want := uint(12345)
+    want := 12345
     if got != want {
         t.Errorf("want %d but got %d", want, got)
     }
