@@ -47,50 +47,66 @@ func powerLevel(x, y, serial int) int {
 	return power
 }
 
-// Day11 finds the 3x3 square with the largest total power.
-// Part 1: Returns the X,Y coordinate of the top-left corner.
+// Day11 finds the square with the largest total power.
+// Part 1: Returns the X,Y coordinate of the 3x3 square's top-left corner.
+// Part 2: Returns the X,Y,size identifier of any size square with largest power.
 func Day11(puzzle Day11Puzzle, part1 bool) string {
-	if !part1 {
-		// Part 2 not implemented yet
-		return ""
-	}
-
 	const gridSize = 300
-	const squareSize = 3
 
-	// Calculate power grid
-	grid := make([][]int, gridSize+1)
+	// Build summed-area table for O(1) rectangle sum queries
+	// SAT[x][y] = sum of all cells from (1,1) to (x,y)
+	sat := make([][]int, gridSize+1)
 	for x := range gridSize + 1 {
-		grid[x] = make([]int, gridSize+1)
+		sat[x] = make([]int, gridSize+1)
 	}
 
 	for x := 1; x <= gridSize; x++ {
 		for y := 1; y <= gridSize; y++ {
-			grid[x][y] = powerLevel(x, y, puzzle.serial)
+			power := powerLevel(x, y, puzzle.serial)
+			sat[x][y] = power + sat[x-1][y] + sat[x][y-1] - sat[x-1][y-1]
 		}
 	}
 
-	// Find 3x3 square with max power
-	maxPower := int(-1 << 31) // min int
-	maxX, maxY := 0, 0
+	// squareSum calculates sum of square of given size starting at (x, y)
+	squareSum := func(x, y, size int) int {
+		x2 := x + size - 1
+		y2 := y + size - 1
+		return sat[x2][y2] - sat[x-1][y2] - sat[x2][y-1] + sat[x-1][y-1]
+	}
 
-	for x := 1; x <= gridSize-squareSize+1; x++ {
-		for y := 1; y <= gridSize-squareSize+1; y++ {
-			// Calculate sum of 3x3 square starting at (x, y)
-			sum := 0
-			for dx := range squareSize {
-				for dy := range squareSize {
-					sum += grid[x+dx][y+dy]
+	maxPower := int(-1 << 31) // min int
+	maxX, maxY, maxSize := 0, 0, 0
+
+	if part1 {
+		// Part 1: Only check 3x3 squares
+		const squareSize = 3
+		for x := 1; x <= gridSize-squareSize+1; x++ {
+			for y := 1; y <= gridSize-squareSize+1; y++ {
+				sum := squareSum(x, y, squareSize)
+				if sum > maxPower {
+					maxPower = sum
+					maxX = x
+					maxY = y
 				}
 			}
+		}
+		return fmt.Sprintf("%d,%d", maxX, maxY)
+	}
 
-			if sum > maxPower {
-				maxPower = sum
-				maxX = x
-				maxY = y
+	// Part 2: Check all sizes from 1 to 300
+	for size := 1; size <= gridSize; size++ {
+		for x := 1; x <= gridSize-size+1; x++ {
+			for y := 1; y <= gridSize-size+1; y++ {
+				sum := squareSum(x, y, size)
+				if sum > maxPower {
+					maxPower = sum
+					maxX = x
+					maxY = y
+					maxSize = size
+				}
 			}
 		}
 	}
 
-	return fmt.Sprintf("%d,%d", maxX, maxY)
+	return fmt.Sprintf("%d,%d,%d", maxX, maxY, maxSize)
 }
