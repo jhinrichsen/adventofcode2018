@@ -88,12 +88,8 @@ func NewDay13(data []byte) (Day13Puzzle, error) {
 
 // Day13 simulates mine cart movement.
 // Part 1: Returns X,Y coordinates of first collision.
+// Part 2: Returns X,Y coordinates of last remaining cart.
 func Day13(puzzle Day13Puzzle, part1 bool) string {
-	if !part1 {
-		// Part 2 not implemented yet
-		return ""
-	}
-
 	// Make a copy of carts
 	carts := make([]cart, len(puzzle.carts))
 	copy(carts, puzzle.carts)
@@ -107,17 +103,36 @@ func Day13(puzzle Day13Puzzle, part1 bool) string {
 			return carts[i].x < carts[j].x
 		})
 
+		// Track which carts to remove after this tick
+		removed := make(map[int]bool)
+
 		// Move each cart
 		for i := range carts {
+			// Skip if already removed
+			if removed[i] {
+				continue
+			}
+
 			// Move cart
 			carts[i].x += carts[i].dx
 			carts[i].y += carts[i].dy
 
 			// Check for collision
 			for j := range carts {
-				if i != j && carts[i].x == carts[j].x && carts[i].y == carts[j].y {
-					return fmt.Sprintf("%d,%d", carts[i].x, carts[i].y)
+				if i != j && !removed[j] && carts[i].x == carts[j].x && carts[i].y == carts[j].y {
+					if part1 {
+						return fmt.Sprintf("%d,%d", carts[i].x, carts[i].y)
+					}
+					// Part 2: Mark both carts for removal
+					removed[i] = true
+					removed[j] = true
+					break
 				}
+			}
+
+			// Skip direction update if cart was removed
+			if removed[i] {
+				continue
 			}
 
 			// Update direction based on track
@@ -151,6 +166,22 @@ func Day13(puzzle Day13Puzzle, part1 bool) string {
 				// case 1: straight - no change
 				}
 				carts[i].turnState = (carts[i].turnState + 1) % 3
+			}
+		}
+
+		// For part 2: Remove crashed carts
+		if !part1 && len(removed) > 0 {
+			newCarts := make([]cart, 0, len(carts)-len(removed))
+			for i, c := range carts {
+				if !removed[i] {
+					newCarts = append(newCarts, c)
+				}
+			}
+			carts = newCarts
+
+			// Check if only one cart remains
+			if len(carts) == 1 {
+				return fmt.Sprintf("%d,%d", carts[0].x, carts[0].y)
 			}
 		}
 	}
