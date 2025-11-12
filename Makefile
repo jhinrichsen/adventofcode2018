@@ -49,7 +49,7 @@ endif
 lint:
 	test -z $(gofmt -l .)
 	$(GO) vet
-	$(GO) run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.2 run ./...
+	$(GO) run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run ./...
 	$(GO) run github.com/client9/misspell/cmd/misspell@latest *
 
 .PHONY: prof
