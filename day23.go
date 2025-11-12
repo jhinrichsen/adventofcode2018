@@ -2,7 +2,6 @@ package adventofcode2018
 
 import (
 	"container/heap"
-	"fmt"
 	"math"
 )
 
@@ -122,7 +121,7 @@ func NewDay23(data []byte) (Day23Puzzle, error) {
 // Day23 finds nanobots in range of strongest.
 // Part 1: Count nanobots in range of the strongest nanobot.
 // Part 2: Find the coordinate in range of the most nanobots, closest to origin.
-func Day23(puzzle Day23Puzzle, part1 bool) string {
+func Day23(puzzle Day23Puzzle, part1 bool) uint {
 	if part1 {
 		// Find strongest nanobot
 		strongest := 0
@@ -142,12 +141,12 @@ func Day23(puzzle Day23Puzzle, part1 bool) string {
 			}
 		}
 
-		return fmt.Sprintf("%d", count)
+		return uint(count)
 	}
 
 	// Part 2: Find the coordinate in range of most nanobots
 	result := findBestPosition(puzzle.bots)
-	return fmt.Sprintf("%d", result)
+	return uint(result)
 }
 
 // manhattanDist3D calculates Manhattan distance in 3D.
