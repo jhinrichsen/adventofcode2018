@@ -1,34 +1,37 @@
 package adventofcode2018
 
-// NewDay18 parses the lumber collection area grid.
-func NewDay18(data []byte) ([]byte, int, int, error) {
-	// Count dimensions
-	width := 0
-	for i := 0; i < len(data); i++ {
-		if data[i] == '\n' {
-			width = i
-			break
-		}
-	}
-	if width == 0 {
-		width = len(data)
+// Day18Puzzle represents the lumber collection area grid.
+type Day18Puzzle struct {
+	grid   []byte
+	width  int
+	height int
+}
+
+// NewDay18 parses the lumber collection area grid from lines.
+func NewDay18(lines []string) (Day18Puzzle, error) {
+	if len(lines) == 0 {
+		return Day18Puzzle{}, nil
 	}
 
-	// Create grid without newlines
-	grid := make([]byte, 0, len(data))
-	for i := 0; i < len(data); i++ {
-		if data[i] != '\n' {
-			grid = append(grid, data[i])
-		}
+	width := len(lines[0])
+	height := len(lines)
+
+	// Create flat grid without newlines
+	grid := make([]byte, 0, width*height)
+	for _, line := range lines {
+		grid = append(grid, []byte(line)...)
 	}
 
-	height := len(grid) / width
-	return grid, width, height, nil
+	return Day18Puzzle{
+		grid:   grid,
+		width:  width,
+		height: height,
+	}, nil
 }
 
 // countAdjacent counts how many of the 8 neighbors match the target character.
-func countAdjacent(grid []byte, width, height, x, y int, target byte) int {
-	count := 0
+func countAdjacent(grid []byte, width, height, x, y int, target byte) uint {
+	count := uint(0)
 	for dy := -1; dy <= 1; dy++ {
 		for dx := -1; dx <= 1; dx++ {
 			if dx == 0 && dy == 0 {
@@ -48,8 +51,8 @@ func countAdjacent(grid []byte, width, height, x, y int, target byte) int {
 // step simulates one minute of the lumber collection area.
 func step(grid []byte, width, height int) []byte {
 	next := make([]byte, len(grid))
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
+	for y := range height {
+		for x := range width {
 			idx := y*width + x
 			current := grid[idx]
 
@@ -84,13 +87,13 @@ func step(grid []byte, width, height int) []byte {
 }
 
 // resourceValue calculates the total resource value (wooded acres * lumberyards).
-func resourceValue(grid []byte) int {
-	trees := 0
-	lumberyards := 0
-	for i := 0; i < len(grid); i++ {
-		if grid[i] == '|' {
+func resourceValue(grid []byte) uint {
+	trees := uint(0)
+	lumberyards := uint(0)
+	for _, cell := range grid {
+		if cell == '|' {
 			trees++
-		} else if grid[i] == '#' {
+		} else if cell == '#' {
 			lumberyards++
 		}
 	}
@@ -98,21 +101,21 @@ func resourceValue(grid []byte) int {
 }
 
 // Day18Part1 simulates 10 minutes and returns the resource value.
-func Day18Part1(grid []byte, width, height int) int {
-	current := make([]byte, len(grid))
-	copy(current, grid)
+func Day18Part1(p Day18Puzzle) uint {
+	current := make([]byte, len(p.grid))
+	copy(current, p.grid)
 
-	for minute := 0; minute < 10; minute++ {
-		current = step(current, width, height)
+	for range 10 {
+		current = step(current, p.width, p.height)
 	}
 
 	return resourceValue(current)
 }
 
 // Day18Part2 simulates 1000000000 minutes using cycle detection.
-func Day18Part2(grid []byte, width, height int) int {
-	current := make([]byte, len(grid))
-	copy(current, grid)
+func Day18Part2(p Day18Puzzle) uint {
+	current := make([]byte, len(p.grid))
+	copy(current, p.grid)
 
 	// Track seen states to detect cycles
 	seen := make(map[string]int)
@@ -138,7 +141,7 @@ func Day18Part2(grid []byte, width, height int) int {
 
 		if minute < target {
 			seen[state] = minute
-			current = step(current, width, height)
+			current = step(current, p.width, p.height)
 			minute++
 		}
 	}

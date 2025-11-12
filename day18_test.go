@@ -7,12 +7,12 @@ func TestDay18Part1Example(t *testing.T) {
 	// Multiplying the number of wooded acres by the number of lumberyards gives
 	// the total resource value after ten minutes: 37 * 31 = 1147."
 	const want = 1147
-	buf := exampleFile(t, 18)
-	grid, width, height, err := NewDay18(buf)
+	lines := linesFromFilename(t, exampleFilename(18))
+	p, err := NewDay18(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := Day18Part1(grid, width, height)
+	got := Day18Part1(p)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)
 	}
@@ -20,12 +20,12 @@ func TestDay18Part1Example(t *testing.T) {
 
 func TestDay18Part1(t *testing.T) {
 	const want = 637550
-	buf := file(t, 18)
-	grid, width, height, err := NewDay18(buf)
+	lines := linesFromFilename(t, filename(18))
+	p, err := NewDay18(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := Day18Part1(grid, width, height)
+	got := Day18Part1(p)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)
 	}
@@ -33,37 +33,29 @@ func TestDay18Part1(t *testing.T) {
 
 func TestDay18Part2(t *testing.T) {
 	const want = 201465
-	buf := file(t, 18)
-	grid, width, height, err := NewDay18(buf)
+	lines := linesFromFilename(t, filename(18))
+	p, err := NewDay18(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := Day18Part2(grid, width, height)
+	got := Day18Part2(p)
 	if want != got {
 		t.Fatalf("want %d but got %d", want, got)
 	}
 }
 
 func BenchmarkDay18Part1(b *testing.B) {
-	buf := file(b, 18)
-	b.ResetTimer()
+	lines := linesFromFilename(b, filename(18))
 	for b.Loop() {
-		grid, width, height, err := NewDay18(buf)
-		if err != nil {
-			b.Fatal(err)
-		}
-		_ = Day18Part1(grid, width, height)
+		p, _ := NewDay18(lines)
+		_ = Day18Part1(p)
 	}
 }
 
 func BenchmarkDay18Part2(b *testing.B) {
-	buf := file(b, 18)
-	b.ResetTimer()
+	lines := linesFromFilename(b, filename(18))
 	for b.Loop() {
-		grid, width, height, err := NewDay18(buf)
-		if err != nil {
-			b.Fatal(err)
-		}
-		_ = Day18Part2(grid, width, height)
+		p, _ := NewDay18(lines)
+		_ = Day18Part2(p)
 	}
 }
