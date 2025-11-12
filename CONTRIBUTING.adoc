@@ -86,174 +86,17 @@ testdata/dayXX_example.txt # Example input (optional)
 
 === Parser Function Pattern
 
-The parser signature depends on the input structure:
+See `test_helper.go` and `input_test.go` for test helper functions and file reading utilities.
 
-* **Line-oriented parsing**: `func NewDayXX(lines []string) (DayXXPuzzle, error)` - when input has distinct line-based structure
-* **Byte-level parsing**: `func NewDayXX(data []byte) (DayXXPuzzle, error)` - when parsing coordinates, numbers, or compact formats
-* **No recursion**: Use loops for parsing
-* **Error handling**: Return errors for invalid input
+==== Pattern 1: Line-Oriented Parser (use `linesFromFilename` helper)
 
-**Rule of thumb**: If the data is naturally line-oriented (distinct lines with different meanings), use `[]string`. For compact formats requiring byte-level parsing, use `[]byte`.
+**Parser signature**: `func NewDayXX(lines []string) (DayXXPuzzle, error)`
 
-**Testing helpers available**:
-
-* `linesFromFilename(t, filename)` - returns `[]string` for line-oriented parsers
-* `file(t, day)` - returns `[]byte` for byte-level parsers
-* `exampleFile(t, day)` - returns `[]byte` for examples
-
-==== Line-Oriented Parsing (Day 3, 4, 6, 7 pattern)
-
-When input has distinct line-based structure (headers, groups, structured lines):
-
-[source,go]
-----
-func NewDayXX(lines []string) (DayXXPuzzle, error) {
-    var groups []group
-    currentSection := ""
-
-    for _, line := range lines {
-        line = strings.TrimSpace(line)
-        if line == "" {
-            continue
-        }
-
-        if line == "Section Header:" {
-            currentSection = "header"
-            continue
-        }
-
-        // Parse line based on current section
-        if currentSection == "header" {
-            group := parseGroupFromLine(line)
-            groups = append(groups, group)
-        }
-    }
-
-    return DayXXPuzzle{groups: groups}, nil
-}
-----
+**When to use**: Input has distinct line-based structure (headers, groups, structured lines)
 
 **Test with**:
 [source,go]
 ----
-func TestDayXXPart1(t *testing.T) {
-    lines := linesFromFilename(t, filename(XX))
-    puzzle, err := NewDayXX(lines)
-    if err != nil {
-        t.Fatal(err)
-    }
-    got := DayXX(puzzle, true)
-    // ...
-}
-----
-
-==== Byte-Level Parsing (Day 16, 23, 25 pattern)
-
-When parsing coordinates, numbers, or compact formats:
-
-[source,go]
-----
-func NewDayXX(data []byte) (DayXXPuzzle, error) {
-    n := len(data)
-    i := 0
-
-    var items []int
-
-    for i < n {
-        // Parse numbers
-        num := 0
-        negative := false
-        if i < n && data[i] == '-' {
-            negative = true
-            i++
-        }
-        for i < n && data[i] >= '0' && data[i] <= '9' {
-            num = num*10 + int(data[i]-'0')
-            i++
-        }
-        if negative {
-            num = -num
-        }
-
-        items = append(items, num)
-
-        // Skip delimiters and whitespace
-        for i < n && (data[i] == ',' || data[i] == ' ') {
-            i++
-        }
-
-        // Skip newlines
-        for i < n && (data[i] == '\n' || data[i] == '\r') {
-            i++
-        }
-    }
-
-    return DayXXPuzzle{items: items}, nil
-}
-----
-
-**Test with**:
-[source,go]
-----
-func TestDayXXPart1(t *testing.T) {
-    puzzle, err := NewDayXX(file(t, XX))
-    if err != nil {
-        t.Fatal(err)
-    }
-    got := DayXX(puzzle, true)
-    // ...
-}
-
-// Or use testWithParserBytes helper
-func TestDayXXPart1(t *testing.T) {
-    testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, "answer")
-}
-----
-
-=== Solution Function Pattern
-
-The solution function MUST follow this signature:
-
-[source,go]
-----
-// DayXX solves the puzzle.
-// Part 1: [Description of what part 1 returns]
-// Part 2: [Description of what part 2 returns]
-func DayXX(puzzle DayXXPuzzle, part1 bool) string {
-    if !part1 {
-        return ""
-    }
-
-    // Solution logic
-    result := solve(puzzle)
-
-    return fmt.Sprintf("%d", result)
-}
-----
-
-=== Testing Pattern
-
-==== For Line-Oriented Parsers (`[]string`)
-
-[source,go]
-----
-package adventofcode2018
-
-import "testing"
-
-func TestDayXXPart1Example(t *testing.T) {
-    lines := linesFromFilename(t, exampleFilename(XX))
-    puzzle, err := NewDayXX(lines)
-    if err != nil {
-        t.Fatal(err)
-    }
-    got := DayXX(puzzle, true)
-    want := "expected"
-    if got != want {
-        t.Errorf("want %s but got %s", want, got)
-    }
-}
-
 func TestDayXXPart1(t *testing.T) {
     lines := linesFromFilename(t, filename(XX))
     puzzle, err := NewDayXX(lines)
@@ -276,19 +119,17 @@ func BenchmarkDayXXPart1(b *testing.B) {
 }
 ----
 
-==== For Byte-Level Parsers (`[]byte`)
+**Examples**: Day 3, 4, 6, 7
 
+==== Pattern 2: Byte-Level Parser (use `testWithParserBytes` helper)
+
+**Parser signature**: `func NewDayXX(data []byte) (DayXXPuzzle, error)`
+
+**When to use**: Parsing coordinates, numbers, or compact formats requiring byte-level iteration
+
+**Test with**:
 [source,go]
 ----
-package adventofcode2018
-
-import "testing"
-
-// Using testWithParserBytes helper (recommended)
-func TestDayXXPart1Example(t *testing.T) {
-    testWithParserBytes(t, XX, exampleFile, true, NewDayXX, DayXX, "expected")
-}
-
 func TestDayXXPart1(t *testing.T) {
     testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, "answer")
 }
@@ -296,30 +137,75 @@ func TestDayXXPart1(t *testing.T) {
 func BenchmarkDayXXPart1(b *testing.B) {
     benchWithParserBytes(b, XX, true, NewDayXX, DayXX)
 }
+----
 
-// OR: Manual approach for table-driven tests
-func TestDayXXPart1Examples(t *testing.T) {
-    tests := []struct {
-        name  string
-        input string
-        want  string
-    }{
-        {"example 1", `input data`, "expected1"},
-        {"example 2", `input data`, "expected2"},
+**Examples**: Day 16, 17, 18, 19, 20, 21, 22, 23, 24, 25
+
+==== Pattern 3: Direct Solver (use `testSolver` helper, no parser)
+
+**Solver signature**: `func DayXX(data []byte, part1 bool) (string, error)`
+
+**When to use**: Simple problems where parsing and solving are tightly coupled
+
+**Test with**:
+[source,go]
+----
+func TestDayXXPart1(t *testing.T) {
+    testSolver(t, XX, filename, true, DayXX, "answer")
+}
+
+func BenchmarkDayXXPart1(b *testing.B) {
+    benchSolver(b, XX, true, DayXX)
+}
+----
+
+**Note**: This pattern is less common. Most days use Pattern 1 or 2.
+
+=== Common Parser Requirements
+
+Regardless of pattern chosen:
+
+* **No recursion**: Use loops for parsing
+* **Error handling**: Return errors for invalid input
+
+=== Solution Function Pattern
+
+For Pattern 1 and 2 (with separate parser):
+
+[source,go]
+----
+// DayXX solves the puzzle.
+// Part 1: [Description of what part 1 returns]
+// Part 2: [Description of what part 2 returns]
+func DayXX(puzzle DayXXPuzzle, part1 bool) string {
+    if !part1 {
+        return ""
     }
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            puzzle, err := NewDayXX([]byte(tt.input))
-            if err != nil {
-                t.Fatal(err)
-            }
-            got := DayXX(puzzle, true)
-            if got != tt.want {
-                t.Errorf("want %s but got %s", tt.want, got)
-            }
-        })
+    // Solution logic
+    result := solve(puzzle)
+
+    return fmt.Sprintf("%d", result)
+}
+----
+
+For Pattern 3 (direct solver, no parser):
+
+[source,go]
+----
+// DayXX solves the puzzle directly from bytes.
+// Part 1: [Description of what part 1 returns]
+// Part 2: [Description of what part 2 returns]
+func DayXX(data []byte, part1 bool) (string, error) {
+    if !part1 {
+        return "", nil
     }
+
+    // Parse and solve logic
+    result := 0
+    // ... implementation
+
+    return fmt.Sprintf("%d", result), nil
 }
 ----
 
@@ -488,5 +374,5 @@ horizontally.
 
 * **Go version**: 1.24 (not 1.25 - avoid network issues)
 * **Platform**: Linux
-* **Test helpers**: `testWithParserBytes`, `benchWithParserBytes`, `exampleFile`, `file`
+* **Test helpers**: See `test_helper.go` and `input_test.go`
 
