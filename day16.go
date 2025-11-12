@@ -1,8 +1,11 @@
 package adventofcode2018
 
 import (
-	"bytes"
+	"strconv"
+	"strings"
 )
+
+const beforePrefix = "Before:"
 
 // Sample represents a before/after observation with an instruction
 type Sample struct {
@@ -16,8 +19,8 @@ type Instruction struct {
 	Op [4]int // [opcode, A, B, C]
 }
 
-// Day16Data holds parsed samples and test program
-type Day16Data struct {
+// Day16Puzzle holds parsed samples and test program
+type Day16Puzzle struct {
 	Samples []Sample
 	Program []Instruction
 }
@@ -87,41 +90,34 @@ var operations = map[string]OpFunc{
 	},
 }
 
-// parseNum parses a number from the data starting at position i
-// Returns the number and the new position
-func parseNum(data []byte, i int) (int, int) {
-	// Skip non-digits
-	for i < len(data) && (data[i] < '0' || data[i] > '9') && data[i] != '-' {
-		i++
-	}
-	if i >= len(data) {
-		return 0, i
+// parseInts parses a line containing space-separated integers
+func parseInts(line string) ([4]int, error) {
+	var result [4]int
+	// Extract numbers from line (handles "Before: [1, 2, 3, 4]" and "1 2 3 4" formats)
+	fields := strings.FieldsFunc(line, func(r rune) bool {
+		return r == ' ' || r == '[' || r == ']' || r == ',' || r == ':'
+	})
+
+	numIdx := 0
+	for _, field := range fields {
+		if field == "" || field == beforePrefix[:len(beforePrefix)-1] || field == "After" {
+			continue
+		}
+		num, err := strconv.Atoi(field)
+		if err != nil {
+			continue
+		}
+		if numIdx < 4 {
+			result[numIdx] = num
+			numIdx++
+		}
 	}
 
-	// Handle negative numbers
-	negative := false
-	if data[i] == '-' {
-		negative = true
-		i++
-	}
-
-	v := 0
-	for i < len(data) && data[i] >= '0' && data[i] <= '9' {
-		v = v*10 + int(data[i]-'0')
-		i++
-	}
-
-	if negative {
-		v = -v
-	}
-
-	return v, i
+	return result, nil
 }
 
-// NewDay16 parses the input file into samples and test program
-func NewDay16(data []byte) (*Day16Data, error) {
-	lines := bytes.Split(data, []byte("\n"))
-
+// NewDay16 parses the input lines into samples and test program
+func NewDay16(lines []string) (*Day16Puzzle, error) {
 	samples := []Sample{}
 	var programStart int
 
@@ -130,33 +126,29 @@ func NewDay16(data []byte) (*Day16Data, error) {
 		line := lines[i]
 
 		// Check if this is a "Before:" line
-		if bytes.HasPrefix(line, []byte("Before:")) {
+		if strings.HasPrefix(line, beforePrefix) {
 			var s Sample
+			var err error
 
 			// Parse Before
-			pos := 0
-			s.Before[0], pos = parseNum(line, pos)
-			s.Before[1], pos = parseNum(line, pos)
-			s.Before[2], pos = parseNum(line, pos)
-			s.Before[3], pos = parseNum(line, pos)
+			s.Before, err = parseInts(line)
+			if err != nil {
+				return nil, err
+			}
 
 			// Parse instruction (next line)
 			i++
-			instLine := lines[i]
-			pos = 0
-			s.Op[0], pos = parseNum(instLine, pos)
-			s.Op[1], pos = parseNum(instLine, pos)
-			s.Op[2], pos = parseNum(instLine, pos)
-			s.Op[3], pos = parseNum(instLine, pos)
+			s.Op, err = parseInts(lines[i])
+			if err != nil {
+				return nil, err
+			}
 
 			// Parse After (next line)
 			i++
-			afterLine := lines[i]
-			pos = 0
-			s.After[0], pos = parseNum(afterLine, pos)
-			s.After[1], pos = parseNum(afterLine, pos)
-			s.After[2], pos = parseNum(afterLine, pos)
-			s.After[3], pos = parseNum(afterLine, pos)
+			s.After, err = parseInts(lines[i])
+			if err != nil {
+				return nil, err
+			}
 
 			samples = append(samples, s)
 			i++
@@ -180,16 +172,16 @@ func NewDay16(data []byte) (*Day16Data, error) {
 			continue
 		}
 
-		var inst Instruction
-		pos := 0
-		inst.Op[0], pos = parseNum(line, pos)
-		inst.Op[1], pos = parseNum(line, pos)
-		inst.Op[2], pos = parseNum(line, pos)
-		inst.Op[3], pos = parseNum(line, pos)
+		inst := Instruction{}
+		var err error
+		inst.Op, err = parseInts(line)
+		if err != nil {
+			return nil, err
+		}
 		program = append(program, inst)
 	}
 
-	return &Day16Data{
+	return &Day16Puzzle{
 		Samples: samples,
 		Program: program,
 	}, nil
@@ -202,10 +194,10 @@ func matchesOp(s Sample, opFunc OpFunc) bool {
 }
 
 // Day16Part1 counts samples that behave like 3 or more opcodes
-func Day16Part1(data *Day16Data) int {
+func Day16Part1(puzzle *Day16Puzzle) int {
 	count := 0
 
-	for _, sample := range data.Samples {
+	for _, sample := range puzzle.Samples {
 		matches := 0
 		for _, opFunc := range operations {
 			if matchesOp(sample, opFunc) {
@@ -273,14 +265,14 @@ func deduceOpcodes(samples []Sample) map[int]string {
 }
 
 // Day16Part2 deduces opcodes and executes the test program
-func Day16Part2(data *Day16Data) int {
+func Day16Part2(puzzle *Day16Puzzle) int {
 	// Deduce the opcode mapping
-	mapping := deduceOpcodes(data.Samples)
+	mapping := deduceOpcodes(puzzle.Samples)
 
 	// Execute the test program
 	reg := [4]int{0, 0, 0, 0}
 
-	for _, inst := range data.Program {
+	for _, inst := range puzzle.Program {
 		opcode := inst.Op[0]
 		opName := mapping[opcode]
 		opFunc := operations[opName]
