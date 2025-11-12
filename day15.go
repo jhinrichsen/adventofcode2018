@@ -74,15 +74,36 @@ func NewDay15(data []byte) (Day15Puzzle, error) {
 
 // Day15 simulates the battle.
 // Part 1: Returns the outcome (rounds * remaining HP).
+// Part 2: Returns the outcome with minimum elf attack power for no elf deaths.
 func Day15(puzzle Day15Puzzle, part1 bool) string {
-	if !part1 {
-		// Part 2 not implemented yet
-		return ""
+	if part1 {
+		outcome, _ := simulate(puzzle, 3)
+		return fmt.Sprintf("%d", outcome)
 	}
 
-	// Make copies
+	// Part 2: Find minimum elf attack power for elves to win with no deaths
+	for elfPower := 4; ; elfPower++ {
+		outcome, allElvesSurvived := simulate(puzzle, elfPower)
+		if allElvesSurvived {
+			return fmt.Sprintf("%d", outcome)
+		}
+	}
+}
+
+// simulate runs the battle with given elf attack power.
+// Returns (outcome, allElvesSurvived).
+func simulate(puzzle Day15Puzzle, elfAttackPower int) (int, bool) {
+	// Make copies and set elf attack power
 	units := make([]unit, len(puzzle.units))
 	copy(units, puzzle.units)
+
+	initialElfCount := 0
+	for i := range units {
+		if units[i].isElf {
+			units[i].attackPower = elfAttackPower
+			initialElfCount++
+		}
+	}
 
 	rounds := 0
 	for {
@@ -137,15 +158,20 @@ func Day15(puzzle Day15Puzzle, part1 bool) string {
 		units = alive
 	}
 
-	// Calculate outcome
+	// Calculate outcome and check elf survival
 	totalHP := 0
+	elfCount := 0
 	for _, u := range units {
 		if u.hp > 0 {
 			totalHP += u.hp
+			if u.isElf {
+				elfCount++
+			}
 		}
 	}
 
-	return fmt.Sprintf("%d", rounds*totalHP)
+	allElvesSurvived := (elfCount == initialElfCount)
+	return rounds * totalHP, allElvesSurvived
 }
 
 // findTargets returns indices of enemy units.
