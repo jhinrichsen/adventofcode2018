@@ -88,8 +88,7 @@ func step(grid []byte, width, height int) []byte {
 
 // resourceValue calculates the total resource value (wooded acres * lumberyards).
 func resourceValue(grid []byte) uint {
-	trees := uint(0)
-	lumberyards := uint(0)
+	var trees, lumberyards uint
 	for _, cell := range grid {
 		if cell == '|' {
 			trees++
