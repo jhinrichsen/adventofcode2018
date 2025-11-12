@@ -26,3 +26,18 @@ func BenchmarkDay08Part2(b *testing.B) {
 	benchWithParserBytes(b, 8, false, NewDay08, Day08)
 }
 
+func TestDay08Part2Example(t *testing.T) {
+	const want = 66
+	lines, err := linesFromFilename(exampleFilename(8))
+	if err != nil {
+		t.Fatal(err)
+	}
+	numbers, err := parseDay08(lines[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := Day08Part2(numbers)
+	if want != got {
+		t.Fatalf("want %d but got %d", want, got)
+	}
+}
