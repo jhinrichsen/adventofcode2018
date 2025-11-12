@@ -199,10 +199,7 @@ func TestManhattanDistance(t *testing.T) {
 
 func TestDay06Part1(t *testing.T) {
 	const want = 4342
-	lines, err := linesFromFilename(filename(6))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, filename(6))
 	ps, err := coordinates(lines)
 	if err != nil {
 		t.Fatal(err)
@@ -257,10 +254,7 @@ func day06Part2(ps []Point, limit int) int {
 
 func TestDay06Part2(t *testing.T) {
 	const want = 42966
-	lines, err := linesFromFilename(filename(6))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, filename(6))
 	ps, err := coordinates(lines)
 	if err != nil {
 		t.Fatal(err)

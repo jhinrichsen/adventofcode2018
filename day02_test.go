@@ -50,10 +50,7 @@ func TestSamplePart1(t *testing.T) {
 
 func TestDay02Part1(t *testing.T) {
 	const want = 5704
-	lines, err := linesFromFilename(filename(2))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, filename(2))
 	got := day2(lines)
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)
@@ -109,10 +106,7 @@ func TestSamplePart2(t *testing.T) {
 
 func TestDay02Part2(t *testing.T) {
 	const want = "umdryabviapkozistwcnihjqx"
-	lines, err := linesFromFilename(filename(2))
-	if err != nil {
-		t.Fatal(err)
-	}
+	lines := linesFromFilename(t, filename(2))
 	got := day2Part2(lines)
 	if want != got {
 		t.Fatalf("want %v but got %v\n", want, got)

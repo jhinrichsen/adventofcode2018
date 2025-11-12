@@ -188,7 +188,7 @@ func BenchmarkDay05Part1(b *testing.B) {
 	b.ResetTimer()
 	for _, r := range reacts {
 		b.Run(r.name, func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
+			for b.Loop() {
 				_ = len(r.fn(buf))
 			}
 		})

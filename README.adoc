@@ -19,11 +19,26 @@ Solutions are hardcoded into unit tests, so you won't see any solutions as
 long as you avoid looking at `*_test.go` files.
 
 == Environment
-- Go 1.17.1
+- Go 1.25
 - vim, vim-go, gopls, fed by an HHKB
 - VisualStudio Code for complex debugging scenarios
 - Fedora 34
 - AMD Ryzen 5 3400G on a Gigabyte B450
+
+== Updates
+
+=== Update 1 (2025)
+- Go 1.24
+- vim, vim-go, gopls, fed by an HHKB
+- Windsurf + GPT-5 low reasoning
+- Fedora 42
+- Framework Laptop 16"
+
+=== Update 2
+- Go 1.25
+- Claude Code
+- Claude Code Web (Research preview)
+- Intel i7 14700
 
 The package name is `adventofcode2018`.
 
@@ -31,7 +46,8 @@ Each day lives separately in a `day{{.02n}}.go` and `day{{.02n}}_test.go` file.
 Unit test data, both examples and puzzle input, is in
 `testdata/day{{.02n}}.txt`, and `testdata/day{{.02n}}_example.txt`.
 
-|====
+
+|===
 | Day | Tries
 |  1  | (no history available. I just do not remember, and haven't taken notes)
 |  1  |
@@ -43,10 +59,10 @@ Unit test data, both examples and puzzle input, is in
 |  5  |
 |  6  |
 |  7  |
-|  8  |
+|  8  | 1 |
 |  9  |
 | 10  |
-| 11  |
+| 11  | 2 |
 | 12  |
 | 13  |
 | 14  |
@@ -61,7 +77,49 @@ Unit test data, both examples and puzzle input, is in
 | 23  |
 | 24  |
 | 25  |
-|====
+|===
 
 Numbers in (brackets) indicate tries so far (part #2 not solved yet).
+
+== Day 01: Chronal Calibration
+== Day 02: Inventory Management System
+== Day 03: No Matter How You Slice It
+== Day 04: Repose Record
+== Day 05: Alchemical Reduction
+== Day 06: Chronal Coordinates
+== Day 07: The Sum of Its Parts
+== Day 08: Memory Maneuver
+== Day 09: Marble Mania
+== Day 10: The Stars Align
+== Day 11: Chronal Charge
+
+[WARNING]
+====
+Part 2 required 2 tries. Initial submission was `231,107,14` but the correct answer was `229,192,11`.
+
+The implementation using summed-area table was correct. The issue was a test failure due to an incorrect expected value - I had guessed the wrong answer when writing the test before running the actual computation.
+
+After debugging with a standalone program, verified the algorithm produces correct results for both examples (serial 18 → 90,269,16 and serial 42 → 232,251,12) and the puzzle input (serial 9424 → 229,192,11, an 11×11 square at position 229,192 with total power 74).
+====
+
+== Day 12: Subterranean Sustainability
+== Day 13: Mine Cart Madness
+== Day 14: Chocolate Charts
+== Day 15: Beverage Bandits
+== Day 16: Chronal Classification
+== Day 17: Reservoir Research
+== Day 18: Settlers of The North Pole
+== Day 19: Go With The Flow
+== Day 20: A Regular Map
+== Day 21: Chronal Conversion
+== Day 22: Mode Maze
+== Day 23: Experimental Emergency Teleportation
+== Day 24: Immune System Simulator 20XX
+== Day 25: Four-Dimensional Adventure
+
+== References
+
+https://github.com/Voltara/advent2018-fast[Advent of Code 2018 optimized C++ solutions]
+
+https://www.forrestthewoods.com/blog/solving-advent-of-code-in-under-a-second/[Rust]
 

@@ -32,11 +32,11 @@ func linesFromReader(tb testing.TB, r io.Reader) []string {
 }
 
 func exampleFilename(day uint8) string {
-	return fmt.Sprintf("testdata/day%02d_example.txt", int(day))
+	return fmt.Sprintf("testdata/day%02d_example.txt", day)
 }
 
 func filename(day uint8) string {
-	return fmt.Sprintf("testdata/day%02d.txt", int(day))
+	return fmt.Sprintf("testdata/day%02d.txt", day)
 }
 
 // file reads the main input file bytes for day N (zero-padded).
@@ -53,6 +53,16 @@ func file(tb testing.TB, day uint8) []byte {
 func exampleFile(tb testing.TB, day uint8) []byte {
 	tb.Helper()
 	buf, err := os.ReadFile(exampleFilename(day))
+	if err != nil {
+		tb.Fatal(err)
+	}
+	return buf
+}
+
+// example2File reads the second example input file bytes for day N (zero-padded).
+func example2File(tb testing.TB, day uint8) []byte {
+	tb.Helper()
+	buf, err := os.ReadFile(fmt.Sprintf("testdata/day%02d_example2.txt", day))
 	if err != nil {
 		tb.Fatal(err)
 	}
