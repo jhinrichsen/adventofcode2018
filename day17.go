@@ -112,19 +112,26 @@ func NewDay17(data []byte) (Day17Puzzle, error) {
 
 // Day17 simulates water flow.
 // Part 1: Count all tiles reached by water (settled + flowing).
+// Part 2: Count only retained water (settled).
 func Day17(puzzle Day17Puzzle, part1 bool) string {
-	if !part1 {
-		return ""
-	}
-
 	// Start flowing from (500, 0)
 	flow(&puzzle, 500, 0)
 
 	// Count water tiles within valid y range
 	count := 0
 	for p, w := range puzzle.water {
-		if p.y >= puzzle.minY && p.y <= puzzle.maxY && (w == '|' || w == '~') {
-			count++
+		if p.y >= puzzle.minY && p.y <= puzzle.maxY {
+			if part1 {
+				// Part 1: Count all water (flowing + settled)
+				if w == '|' || w == '~' {
+					count++
+				}
+			} else {
+				// Part 2: Count only retained water (settled)
+				if w == '~' {
+					count++
+				}
+			}
 		}
 	}
 

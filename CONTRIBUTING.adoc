@@ -15,6 +15,41 @@ Since its invention in 2015, it starts Dec 1st and ends Dec 25th.
 For each day, participants are given a puzzle that needs to be solved.
 Puzzles are split into two parts, Part 1 and Part 2.
 
+== CRITICAL: Solution Confidentiality
+
+**Solutions MUST NEVER be mentioned anywhere except in unit tests.**
+
+This rule applies to:
+
+* ❌ Git commit messages
+* ❌ Pull request titles
+* ❌ Pull request descriptions
+* ❌ Documentation files (README, design docs, etc.)
+* ❌ Code comments
+* ❌ Any other location
+
+The **ONLY** permitted location for puzzle solutions is:
+
+* ✅ Unit test files: `TestDayNNPart1` and `TestDayNNPart2` (the `want` parameter)
+
+**Rationale**: Solutions are user-specific and should remain confidential. Exposing them publicly defeats the purpose of the Advent of Code challenge for others.
+
+**Examples**:
+
+Good commit message:
+----
+feat: implement Day 17 Part 2 water retention
+
+Counts only settled water tiles after spring runs dry.
+Part 1 counts all water (flowing + settled).
+Part 2 counts only retained water (settled).
+----
+
+Bad commit message:
+----
+feat: solve Day 17 Part 2 - answer is 30410  ❌ NEVER DO THIS
+----
+
 == Part 1
 
 Each puzzle is publicly available from https://adventofcode/{{YEAR}}/day/{{day}}, e.g. https://adventofcode/2015/day/1 for the first puzzle.
@@ -267,7 +302,7 @@ func copyGrid(grid [][]byte) [][]byte {
 
 === Git Commit Messages
 
-Use conventional commit format. **CRITICAL**: Never include puzzle answers in commit messages.
+Use conventional commit format. **CRITICAL**: Never include puzzle answers in commit messages (see "Solution Confidentiality" section above).
 
 Good examples:
 
