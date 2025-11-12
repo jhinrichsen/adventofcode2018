@@ -163,7 +163,7 @@ func Day13(puzzle Day13Puzzle, part1 bool) string {
 					carts[i].dx, carts[i].dy = carts[i].dy, -carts[i].dx
 				case 2: // Turn right
 					carts[i].dx, carts[i].dy = -carts[i].dy, carts[i].dx
-				// case 1: straight - no change
+					// case 1: straight - no change
 				}
 				carts[i].turnState = (carts[i].turnState + 1) % 3
 			}

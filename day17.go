@@ -1,9 +1,5 @@
 package adventofcode2018
 
-import (
-	"fmt"
-)
-
 // Day17Puzzle represents the underground scan.
 type Day17Puzzle struct {
 	clay  map[pos]bool
@@ -113,7 +109,7 @@ func NewDay17(data []byte) (Day17Puzzle, error) {
 // Day17 simulates water flow.
 // Part 1: Count all tiles reached by water (settled + flowing).
 // Part 2: Count only retained water (settled).
-func Day17(puzzle Day17Puzzle, part1 bool) string {
+func Day17(puzzle Day17Puzzle, part1 bool) uint {
 	// Start flowing from (500, 0)
 	flow(&puzzle, 500, 0)
 
@@ -135,7 +131,7 @@ func Day17(puzzle Day17Puzzle, part1 bool) string {
 		}
 	}
 
-	return fmt.Sprintf("%d", count)
+	return count
 }
 
 // flow simulates water flowing from position (x, y).

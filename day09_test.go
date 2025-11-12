@@ -45,4 +45,3 @@ func BenchmarkDay09Part1(b *testing.B) {
 func BenchmarkDay09Part2(b *testing.B) {
 	benchWithParserBytes(b, 9, false, NewDay09, Day09)
 }
-
