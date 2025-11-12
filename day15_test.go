@@ -93,8 +93,15 @@ func TestDay15Part1Examples(t *testing.T) {
 }
 
 func TestDay15Part1(t *testing.T) {
-	t.Skip("Skipping - answer too high, need to debug")
-	testWithParserBytes(t, 15, file, true, NewDay15, Day15, "0")
+	// Note: example 3 fails (off by 3 HP), but trying puzzle anyway
+	data := file(t, 15)
+	puzzle, err := NewDay15(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := Day15(puzzle, true)
+	t.Logf("Result: %s", result)
+	// Not asserting - just logging the result
 }
 
 func BenchmarkDay15Part1(b *testing.B) {
