@@ -59,10 +59,10 @@ Unit test data, both examples and puzzle input, is in
 |  5  |
 |  6  |
 |  7  |
-|  8  | | 1
+|  8  | 1 |
 |  9  |
 | 10  |
-| 11  |
+| 11  | 2 |
 | 12  |
 | 13  |
 | 14  |
@@ -92,6 +92,16 @@ Numbers in (brackets) indicate tries so far (part #2 not solved yet).
 == Day 09: Marble Mania
 == Day 10: The Stars Align
 == Day 11: Chronal Charge
+
+[WARNING]
+====
+Part 2 required 2 tries. Initial submission was `231,107,14` but the correct answer was `229,192,11`.
+
+The implementation using summed-area table was correct. The issue was a test failure due to an incorrect expected value - I had guessed the wrong answer when writing the test before running the actual computation.
+
+After debugging with a standalone program, verified the algorithm produces correct results for both examples (serial 18 → 90,269,16 and serial 42 → 232,251,12) and the puzzle input (serial 9424 → 229,192,11, an 11×11 square at position 229,192 with total power 74).
+====
+
 == Day 12: Subterranean Sustainability
 == Day 13: Mine Cart Madness
 == Day 14: Chocolate Charts
