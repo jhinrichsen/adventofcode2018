@@ -142,22 +142,22 @@ func parseGroup(line string, id int, army string) group {
 // Part 2: Returns the number of units the immune system has after winning with the smallest boost.
 func Day24(puzzle Day24Puzzle, part1 bool) uint {
 	if part1 {
-		_, units := simulateCombat(puzzle, 0)
+		_, units := SimulateCombat(puzzle, 0)
 		return uint(units)
 	}
 
 	// Part 2: Find smallest boost for immune system to win
 	for boost := 1; ; boost++ {
-		winner, units := simulateCombat(puzzle, boost)
+		winner, units := SimulateCombat(puzzle, boost)
 		if winner == "immune" {
 			return uint(units)
 		}
 	}
 }
 
-// simulateCombat runs the combat simulation with the given boost.
+// SimulateCombat runs the combat simulation with the given boost.
 // Returns the winner ("immune" or "infection") and the number of units remaining.
-func simulateCombat(puzzle Day24Puzzle, boost int) (string, int) {
+func SimulateCombat(puzzle Day24Puzzle, boost int) (string, int) {
 	// Make copies
 	immune := make([]group, len(puzzle.immuneSystem))
 	copy(immune, puzzle.immuneSystem)
@@ -244,6 +244,11 @@ func simulateCombat(puzzle Day24Puzzle, boost int) (string, int) {
 	}
 
 	// Determine winner and count remaining units
+	if len(immune) > 0 && len(infect) > 0 {
+		// Stalemate: both armies survive
+		return "stalemate", 0
+	}
+
 	if len(immune) > 0 {
 		total := 0
 		for _, g := range immune {

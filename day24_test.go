@@ -152,7 +152,7 @@ func TestDay24Part2ExampleWithBoost(t *testing.T) {
 	}
 
 	// With boost of 1570, immune system should win with 51 units
-	winner, units := simulateCombat(puzzle, 1570)
+	winner, units := SimulateCombat(puzzle, 1570)
 	if winner != "immune" {
 		t.Errorf("with boost 1570: expected immune to win, but %s won", winner)
 	}
@@ -166,7 +166,7 @@ func TestDay24Part2Example(t *testing.T) {
 }
 
 func TestDay24Part2(t *testing.T) {
-	testWithParserBytes(t, 24, file, false, NewDay24, Day24, 757)
+	testWithParserBytes(t, 24, file, false, NewDay24, Day24, 3313)
 }
 
 func BenchmarkDay24Part1(b *testing.B) {
