@@ -86,13 +86,52 @@ testdata/dayXX_example.txt # Example input (optional)
 
 === Parser Function Pattern
 
-The parser MUST follow these rules:
+The parser signature depends on the input structure:
 
-* **Signature**: `func NewDayXX(data []byte) (DayXXPuzzle, error)`
-* **Input**: Raw `[]byte` (never `string`)
-* **Parsing**: Manual index-based iteration (no `strings.Split` for complex parsing)
+* **Line-oriented parsing**: `func NewDayXX(data []byte) (DayXXPuzzle, error)` where first operation is `strings.Split(string(data), "\n")`
+* **Byte-level parsing**: `func NewDayXX(data []byte) (DayXXPuzzle, error)` with manual index-based iteration
 * **No recursion**: Use loops for parsing
 * **Error handling**: Return errors for invalid input
+
+**Rule of thumb**: If the first thing you do is split by newlines, the input should already be `[]string`. Otherwise, use `[]byte` for byte-level parsing.
+
+==== Line-Oriented Parsing (Day 24 pattern)
+
+When input has distinct line-based structure (headers, groups, etc.):
+
+[source,go]
+----
+func NewDayXX(data []byte) (DayXXPuzzle, error) {
+    lines := strings.Split(string(data), "\n")
+
+    var groups []group
+    currentSection := ""
+
+    for _, line := range lines {
+        line = strings.TrimSpace(line)
+        if line == "" {
+            continue
+        }
+
+        if line == "Section Header:" {
+            currentSection = "header"
+            continue
+        }
+
+        // Parse line based on current section
+        if currentSection == "header" {
+            group := parseGroupFromLine(line)
+            groups = append(groups, group)
+        }
+    }
+
+    return DayXXPuzzle{groups: groups}, nil
+}
+----
+
+==== Byte-Level Parsing (Day 16, 23, 25 pattern)
+
+When parsing coordinates, numbers, or compact formats:
 
 [source,go]
 ----
@@ -336,10 +375,11 @@ horizontally.
 
 **Parsing**:
 
+* ❌ Using `strings.Split(string(data), "\n")` as first operation (prefer line-oriented parser design)
 * ❌ Not handling negative numbers
 * ❌ Forgetting to skip delimiters
 * ❌ Off-by-one errors in index iteration
-* ❌ Using string operations on []byte
+* ❌ Converting `[]byte` to `string` unnecessarily
 
 **Algorithm**:
 
