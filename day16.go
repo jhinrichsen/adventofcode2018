@@ -1,158 +1,210 @@
 package adventofcode2018
 
 import (
-	"fmt"
+	"strconv"
+	"strings"
 )
 
-// Day16Puzzle represents the samples and test program.
+// Sample represents a before/after observation with an instruction
+type Sample struct {
+	Before [4]int
+	After  [4]int
+	Op     [4]int // [opcode, A, B, C]
+}
+
+// Instruction represents a single instruction in the test program
+type Instruction struct {
+	Op [4]int // [opcode, A, B, C]
+}
+
+// Day16Puzzle holds parsed samples and test program
 type Day16Puzzle struct {
-	samples []sample
+	Samples []Sample
+	Program []Instruction
 }
 
-type sample struct {
-	before      [4]int
-	instruction [4]int
-	after       [4]int
-}
+// OpFunc is a function that executes an operation
+type OpFunc func(reg [4]int, a, b, c int) [4]int
 
-// NewDay16 parses the input data.
-func NewDay16(data []byte) (Day16Puzzle, error) {
-	n := len(data)
-	i := 0
-
-	var samples []sample
-
-	// Parse samples (Before/After format)
-	for i < n {
-		// Look for "Before: "
-		if i+8 <= n && string(data[i:i+8]) == "Before: " {
-			// Parse Before line
-			var before [4]int
-			i += 8
-			if i >= n || data[i] != '[' {
-				return Day16Puzzle{}, fmt.Errorf("expected '[' after 'Before: '")
-			}
-			i++
-			for j := 0; j < 4; j++ {
-				num := 0
-				for i < n && data[i] >= '0' && data[i] <= '9' {
-					num = num*10 + int(data[i]-'0')
-					i++
-				}
-				before[j] = num
-				// Skip comma and space
-				if j < 3 {
-					if i < n && data[i] == ',' {
-						i++
-					}
-					if i < n && data[i] == ' ' {
-						i++
-					}
-				}
-			}
-			// Skip closing bracket and newline
-			for i < n && (data[i] == ']' || data[i] == '\n' || data[i] == '\r') {
-				i++
-			}
-
-			// Parse instruction line
-			var instruction [4]int
-			for j := 0; j < 4; j++ {
-				num := 0
-				for i < n && data[i] >= '0' && data[i] <= '9' {
-					num = num*10 + int(data[i]-'0')
-					i++
-				}
-				instruction[j] = num
-				// Skip space
-				if i < n && data[i] == ' ' {
-					i++
-				}
-			}
-			// Skip newline
-			for i < n && (data[i] == '\n' || data[i] == '\r') {
-				i++
-			}
-
-			// Parse After line
-			var after [4]int
-			// Skip "After:  ["
-			if i+9 <= n && string(data[i:i+9]) == "After:  [" {
-				i += 9
-			} else if i+8 <= n && string(data[i:i+8]) == "After: [" {
-				i += 8
-			}
-			for j := 0; j < 4; j++ {
-				num := 0
-				for i < n && data[i] >= '0' && data[i] <= '9' {
-					num = num*10 + int(data[i]-'0')
-					i++
-				}
-				after[j] = num
-				// Skip comma and space
-				if j < 3 {
-					if i < n && data[i] == ',' {
-						i++
-					}
-					if i < n && data[i] == ' ' {
-						i++
-					}
-				}
-			}
-			// Skip closing bracket and newlines
-			for i < n && (data[i] == ']' || data[i] == '\n' || data[i] == '\r') {
-				i++
-			}
-
-			samples = append(samples, sample{before: before, instruction: instruction, after: after})
+// All 16 operations
+var operations = map[string]OpFunc{
+	"addr": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] + reg[b]; return reg },
+	"addi": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] + b; return reg },
+	"mulr": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] * reg[b]; return reg },
+	"muli": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] * b; return reg },
+	"banr": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] & reg[b]; return reg },
+	"bani": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] & b; return reg },
+	"borr": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] | reg[b]; return reg },
+	"bori": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a] | b; return reg },
+	"setr": func(reg [4]int, a, b, c int) [4]int { reg[c] = reg[a]; return reg },
+	"seti": func(reg [4]int, a, b, c int) [4]int { reg[c] = a; return reg },
+	"gtir": func(reg [4]int, a, b, c int) [4]int {
+		if a > reg[b] {
+			reg[c] = 1
 		} else {
-			// Skip other lines (empty lines or test program)
-			for i < n && data[i] != '\n' && data[i] != '\r' {
-				i++
-			}
-			for i < n && (data[i] == '\n' || data[i] == '\r') {
-				i++
-			}
+			reg[c] = 0
+		}
+		return reg
+	},
+	"gtri": func(reg [4]int, a, b, c int) [4]int {
+		if reg[a] > b {
+			reg[c] = 1
+		} else {
+			reg[c] = 0
+		}
+		return reg
+	},
+	"gtrr": func(reg [4]int, a, b, c int) [4]int {
+		if reg[a] > reg[b] {
+			reg[c] = 1
+		} else {
+			reg[c] = 0
+		}
+		return reg
+	},
+	"eqir": func(reg [4]int, a, b, c int) [4]int {
+		if a == reg[b] {
+			reg[c] = 1
+		} else {
+			reg[c] = 0
+		}
+		return reg
+	},
+	"eqri": func(reg [4]int, a, b, c int) [4]int {
+		if reg[a] == b {
+			reg[c] = 1
+		} else {
+			reg[c] = 0
+		}
+		return reg
+	},
+	"eqrr": func(reg [4]int, a, b, c int) [4]int {
+		if reg[a] == reg[b] {
+			reg[c] = 1
+		} else {
+			reg[c] = 0
+		}
+		return reg
+	},
+}
+
+// parseInts parses a line containing space-separated integers
+func parseInts(line string) ([4]int, error) {
+	var result [4]int
+	// Extract numbers from line (handles "Before: [1, 2, 3, 4]" and "1 2 3 4" formats)
+	fields := strings.FieldsFunc(line, func(r rune) bool {
+		return r == ' ' || r == '[' || r == ']' || r == ',' || r == ':'
+	})
+
+	numIdx := 0
+	for _, field := range fields {
+		if field == "" || field == "Before" || field == "After" {
+			continue
+		}
+		num, err := strconv.Atoi(field)
+		if err != nil {
+			continue
+		}
+		if numIdx < 4 {
+			result[numIdx] = num
+			numIdx++
 		}
 	}
 
-	return Day16Puzzle{samples: samples}, nil
+	return result, nil
 }
 
-// Day16 solves the puzzle.
-// Part 1: Count samples that behave like 3+ opcodes.
-func Day16(puzzle Day16Puzzle, part1 bool) string {
-	if !part1 {
-		return ""
+// NewDay16 parses the input lines into samples and test program
+func NewDay16(lines []string) (*Day16Puzzle, error) {
+	const beforePrefix = "Before:"
+
+	samples := []Sample{}
+	var programStart int
+
+	i := 0
+	for i < len(lines) {
+		line := lines[i]
+
+		// Check if this is a "Before:" line
+		if strings.HasPrefix(line, beforePrefix) {
+			var s Sample
+			var err error
+
+			// Parse Before
+			s.Before, err = parseInts(line)
+			if err != nil {
+				return nil, err
+			}
+
+			// Parse instruction (next line)
+			i++
+			s.Op, err = parseInts(lines[i])
+			if err != nil {
+				return nil, err
+			}
+
+			// Parse After (next line)
+			i++
+			s.After, err = parseInts(lines[i])
+			if err != nil {
+				return nil, err
+			}
+
+			samples = append(samples, s)
+			i++
+			continue
+		}
+
+		// Check for double blank line (separator between samples and program)
+		if len(line) == 0 && i+1 < len(lines) && len(lines[i+1]) == 0 {
+			programStart = i + 2
+			break
+		}
+
+		i++
 	}
 
-	count := 0
-	for _, s := range puzzle.samples {
-		matches := countMatches(s)
+	// Parse test program
+	program := []Instruction{}
+	for i := programStart; i < len(lines); i++ {
+		line := lines[i]
+		if len(line) == 0 {
+			continue
+		}
+
+		inst := Instruction{}
+		var err error
+		inst.Op, err = parseInts(line)
+		if err != nil {
+			return nil, err
+		}
+		program = append(program, inst)
+	}
+
+	return &Day16Puzzle{
+		Samples: samples,
+		Program: program,
+	}, nil
+}
+
+// matchesOp checks if a sample matches a given operation
+func matchesOp(s Sample, opFunc OpFunc) bool {
+	result := opFunc(s.Before, s.Op[1], s.Op[2], s.Op[3])
+	return result == s.After
+}
+
+// Day16Part1 counts samples that behave like 3 or more opcodes
+func Day16Part1(puzzle *Day16Puzzle) uint {
+	var count uint
+
+	for _, sample := range puzzle.Samples {
+		matches := 0
+		for _, opFunc := range operations {
+			if matchesOp(sample, opFunc) {
+				matches++
+			}
+		}
 		if matches >= 3 {
-			count++
-		}
-	}
-
-	return fmt.Sprintf("%d", count)
-}
-
-// countMatches returns how many opcodes produce the expected result.
-func countMatches(s sample) int {
-	count := 0
-	a := s.instruction[1]
-	b := s.instruction[2]
-	c := s.instruction[3]
-
-	// Test all 16 opcodes
-	opcodes := []func([4]int, int, int, int) [4]int{
-		addr, addi, mulr, muli, banr, bani, borr, bori,
-		setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr,
-	}
-
-	for _, op := range opcodes {
-		result := op(s.before, a, b, c)
-		if result == s.after {
 			count++
 		}
 	}
@@ -160,108 +212,72 @@ func countMatches(s sample) int {
 	return count
 }
 
-// Opcode implementations
-
-func addr(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] + regs[b]
-	return regs
-}
-
-func addi(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] + b
-	return regs
-}
-
-func mulr(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] * regs[b]
-	return regs
-}
-
-func muli(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] * b
-	return regs
-}
-
-func banr(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] & regs[b]
-	return regs
-}
-
-func bani(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] & b
-	return regs
-}
-
-func borr(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] | regs[b]
-	return regs
-}
-
-func bori(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a] | b
-	return regs
-}
-
-func setr(regs [4]int, a, b, c int) [4]int {
-	regs[c] = regs[a]
-	return regs
-}
-
-func seti(regs [4]int, a, b, c int) [4]int {
-	regs[c] = a
-	return regs
-}
-
-func gtir(regs [4]int, a, b, c int) [4]int {
-	if a > regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
+// deduceOpcodes determines which opcode number maps to which operation
+func deduceOpcodes(samples []Sample) map[int]string {
+	// For each opcode number, track which operations it could be
+	possible := make(map[int]map[string]bool)
+	for i := 0; i < 16; i++ {
+		possible[i] = make(map[string]bool)
+		for name := range operations {
+			possible[i][name] = true
+		}
 	}
-	return regs
+
+	// Eliminate impossible mappings based on samples
+	for _, sample := range samples {
+		opcode := sample.Op[0]
+		for name, opFunc := range operations {
+			if !matchesOp(sample, opFunc) {
+				delete(possible[opcode], name)
+			}
+		}
+	}
+
+	// Deduce the mapping by repeatedly finding opcodes with only one possibility
+	mapping := make(map[int]string)
+	used := make(map[string]bool)
+
+	for len(mapping) < 16 {
+		// Find an opcode with only one possibility
+		for opcode := 0; opcode < 16; opcode++ {
+			if _, ok := mapping[opcode]; ok {
+				continue // Already mapped
+			}
+
+			// Count possibilities
+			var onlyOption string
+			count := 0
+			for name := range possible[opcode] {
+				if !used[name] {
+					onlyOption = name
+					count++
+				}
+			}
+
+			if count == 1 {
+				mapping[opcode] = onlyOption
+				used[onlyOption] = true
+			}
+		}
+	}
+
+	return mapping
 }
 
-func gtri(regs [4]int, a, b, c int) [4]int {
-	if regs[a] > b {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
-}
+// Day16Part2 deduces opcodes and executes the test program
+func Day16Part2(puzzle *Day16Puzzle) int {
+	// Deduce the opcode mapping
+	mapping := deduceOpcodes(puzzle.Samples)
 
-func gtrr(regs [4]int, a, b, c int) [4]int {
-	if regs[a] > regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
-}
+	// Execute the test program
+	reg := [4]int{0, 0, 0, 0}
 
-func eqir(regs [4]int, a, b, c int) [4]int {
-	if a == regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
+	for _, inst := range puzzle.Program {
+		opcode := inst.Op[0]
+		opName := mapping[opcode]
+		opFunc := operations[opName]
+		reg = opFunc(reg, inst.Op[1], inst.Op[2], inst.Op[3])
 	}
-	return regs
-}
 
-func eqri(regs [4]int, a, b, c int) [4]int {
-	if regs[a] == b {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
-}
-
-func eqrr(regs [4]int, a, b, c int) [4]int {
-	if regs[a] == regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
+	return reg[0]
 }

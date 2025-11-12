@@ -2,31 +2,44 @@ package adventofcode2018
 
 import "testing"
 
-func TestDay16Part1Example(t *testing.T) {
-	input := `Before: [3, 2, 1, 1]
-9 2 1 2
-After:  [3, 2, 2, 1]
-`
-	puzzle, err := NewDay16([]byte(input))
+func TestDay16Part1(t *testing.T) {
+	const want uint = 607
+	lines := linesFromFilename(t, filename(16))
+	puzzle, err := NewDay16(lines)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// This sample should match 3 opcodes (mulr, addi, seti)
-	if len(puzzle.samples) != 1 {
-		t.Fatalf("expected 1 sample, got %d", len(puzzle.samples))
-	}
-
-	matches := countMatches(puzzle.samples[0])
-	if matches != 3 {
-		t.Errorf("expected 3 matches, got %d", matches)
+	got := Day16Part1(puzzle)
+	if want != got {
+		t.Fatalf("want %d but got %d", want, got)
 	}
 }
 
-func TestDay16Part1(t *testing.T) {
-	testWithParserBytes(t, 16, file, true, NewDay16, Day16, "607")
+func TestDay16Part2(t *testing.T) {
+	const want = 577
+	lines := linesFromFilename(t, filename(16))
+	puzzle, err := NewDay16(lines)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := Day16Part2(puzzle)
+	if want != got {
+		t.Fatalf("want %d but got %d", want, got)
+	}
 }
 
 func BenchmarkDay16Part1(b *testing.B) {
-	benchWithParserBytes(b, 16, true, NewDay16, Day16)
+	lines := linesFromFilename(b, filename(16))
+	for b.Loop() {
+		puzzle, _ := NewDay16(lines)
+		_ = Day16Part1(puzzle)
+	}
+}
+
+func BenchmarkDay16Part2(b *testing.B) {
+	lines := linesFromFilename(b, filename(16))
+	for b.Loop() {
+		puzzle, _ := NewDay16(lines)
+		_ = Day16Part2(puzzle)
+	}
 }
