@@ -136,7 +136,7 @@ func Day23(puzzle Day23Puzzle, part1 bool) uint {
 		s := puzzle.bots[strongest]
 		for _, b := range puzzle.bots {
 			dist := manhattanDist3D(s.x, s.y, s.z, b.x, b.y, b.z)
-			if dist <= s.r {
+			if dist <= uint(s.r) {
 				count++
 			}
 		}
@@ -145,21 +145,20 @@ func Day23(puzzle Day23Puzzle, part1 bool) uint {
 	}
 
 	// Part 2: Find the coordinate in range of most nanobots
-	result := findBestPosition(puzzle.bots)
-	return uint(result)
+	return findBestPosition(puzzle.bots)
 }
 
 // manhattanDist3D calculates Manhattan distance in 3D.
-func manhattanDist3D(x1, y1, z1, x2, y2, z2 int) int {
-	return abs(x2-x1) + abs(y2-y1) + abs(z2-z1)
+func manhattanDist3D(x1, y1, z1, x2, y2, z2 int) uint {
+	return uint(abs(x2-x1) + abs(y2-y1) + abs(z2-z1))
 }
 
 // region represents a 3D cube region.
 type region struct {
-	x, y, z int // bottom-left-front corner
-	size    int // length of each side
-	inRange int // number of bots that can reach this region
-	distToOrigin int // minimum distance from this region to origin
+	x, y, z      int  // bottom-left-front corner
+	size         int  // length of each side
+	inRange      int  // number of bots that can reach this region
+	distToOrigin uint // minimum distance from this region to origin
 }
 
 // regionQueue implements heap.Interface for priority queue of regions.
@@ -195,7 +194,7 @@ func (pq *regionQueue) Pop() interface{} {
 }
 
 // distToRegion calculates the minimum Manhattan distance from a nanobot to a region.
-func distToRegion(bot nanobot, r region) int {
+func distToRegion(bot nanobot, r region) uint {
 	dx := 0
 	if bot.x < r.x {
 		dx = r.x - bot.x
@@ -217,14 +216,14 @@ func distToRegion(bot nanobot, r region) int {
 		dz = bot.z - (r.z + r.size - 1)
 	}
 
-	return dx + dy + dz
+	return uint(dx + dy + dz)
 }
 
 // countBotsInRange counts how many bots can reach this region.
 func countBotsInRange(bots []nanobot, r region) int {
 	count := 0
 	for _, bot := range bots {
-		if distToRegion(bot, r) <= bot.r {
+		if distToRegion(bot, r) <= uint(bot.r) {
 			count++
 		}
 	}
@@ -232,7 +231,7 @@ func countBotsInRange(bots []nanobot, r region) int {
 }
 
 // minDistToOrigin calculates the minimum Manhattan distance from region to origin.
-func minDistToOrigin(r region) int {
+func minDistToOrigin(r region) uint {
 	dx := 0
 	if r.x > 0 {
 		dx = r.x
@@ -254,11 +253,11 @@ func minDistToOrigin(r region) int {
 		dz = -(r.z + r.size - 1)
 	}
 
-	return dx + dy + dz
+	return uint(dx + dy + dz)
 }
 
 // findBestPosition finds the position in range of most nanobots, closest to origin.
-func findBestPosition(bots []nanobot) int {
+func findBestPosition(bots []nanobot) uint {
 	// Find the bounding box of all nanobots
 	minX, maxX := math.MaxInt32, math.MinInt32
 	minY, maxY := math.MaxInt32, math.MinInt32
