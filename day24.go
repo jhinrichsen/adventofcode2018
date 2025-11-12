@@ -139,16 +139,35 @@ func parseGroup(line string, id int, army string) group {
 
 // Day24 simulates the combat.
 // Part 1: Returns the number of units in the winning army.
+// Part 2: Returns the number of units the immune system has after winning with the smallest boost.
 func Day24(puzzle Day24Puzzle, part1 bool) string {
-	if !part1 {
-		return ""
+	if part1 {
+		_, units := simulateCombat(puzzle, 0)
+		return fmt.Sprintf("%d", units)
 	}
 
+	// Part 2: Find smallest boost for immune system to win
+	for boost := 1; ; boost++ {
+		winner, units := simulateCombat(puzzle, boost)
+		if winner == "immune" {
+			return fmt.Sprintf("%d", units)
+		}
+	}
+}
+
+// simulateCombat runs the combat simulation with the given boost.
+// Returns the winner ("immune" or "infection") and the number of units remaining.
+func simulateCombat(puzzle Day24Puzzle, boost int) (string, int) {
 	// Make copies
 	immune := make([]group, len(puzzle.immuneSystem))
 	copy(immune, puzzle.immuneSystem)
 	infect := make([]group, len(puzzle.infection))
 	copy(infect, puzzle.infection)
+
+	// Apply boost to immune system
+	for i := range immune {
+		immune[i].attackDmg += boost
+	}
 
 	// Simulate combat
 	for len(immune) > 0 && len(infect) > 0 {
@@ -224,16 +243,20 @@ func Day24(puzzle Day24Puzzle, part1 bool) string {
 		}
 	}
 
-	// Count remaining units
-	total := 0
-	for _, g := range immune {
-		total += g.units
+	// Determine winner and count remaining units
+	if len(immune) > 0 {
+		total := 0
+		for _, g := range immune {
+			total += g.units
+		}
+		return "immune", total
 	}
+
+	total := 0
 	for _, g := range infect {
 		total += g.units
 	}
-
-	return fmt.Sprintf("%d", total)
+	return "infection", total
 }
 
 func effectivePower(g group) int {

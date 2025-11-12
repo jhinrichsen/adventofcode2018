@@ -153,6 +153,42 @@ func TestDay24Part1(t *testing.T) {
 	testWithParserBytes(t, 24, file, true, NewDay24, Day24, "16530")
 }
 
+func TestDay24Part2ExampleWithBoost(t *testing.T) {
+	puzzle, err := NewDay24(exampleFile(t, 24))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// With boost of 1570, immune system should win with 51 units
+	winner, units := simulateCombat(puzzle, 1570)
+	if winner != "immune" {
+		t.Errorf("with boost 1570: expected immune to win, but %s won", winner)
+	}
+	if units != 51 {
+		t.Errorf("with boost 1570: expected 51 units, got %d", units)
+	}
+}
+
+func TestDay24Part2Example(t *testing.T) {
+	puzzle, err := NewDay24(exampleFile(t, 24))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := Day24(puzzle, false)
+	const want = "51"
+	if got != want {
+		t.Errorf("got %s, want %s", got, want)
+	}
+}
+
+func TestDay24Part2(t *testing.T) {
+	testWithParserBytes(t, 24, file, false, NewDay24, Day24, "757")
+}
+
 func BenchmarkDay24Part1(b *testing.B) {
 	benchWithParserBytes(b, 24, true, NewDay24, Day24)
+}
+
+func BenchmarkDay24Part2(b *testing.B) {
+	benchWithParserBytes(b, 24, false, NewDay24, Day24)
 }
