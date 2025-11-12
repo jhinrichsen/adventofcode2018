@@ -88,22 +88,26 @@ testdata/dayXX_example.txt # Example input (optional)
 
 The parser signature depends on the input structure:
 
-* **Line-oriented parsing**: `func NewDayXX(data []byte) (DayXXPuzzle, error)` where first operation is `strings.Split(string(data), "\n")`
-* **Byte-level parsing**: `func NewDayXX(data []byte) (DayXXPuzzle, error)` with manual index-based iteration
+* **Line-oriented parsing**: `func NewDayXX(lines []string) (DayXXPuzzle, error)` - when input has distinct line-based structure
+* **Byte-level parsing**: `func NewDayXX(data []byte) (DayXXPuzzle, error)` - when parsing coordinates, numbers, or compact formats
 * **No recursion**: Use loops for parsing
 * **Error handling**: Return errors for invalid input
 
-**Rule of thumb**: If the first thing you do is split by newlines, the input should already be `[]string`. Otherwise, use `[]byte` for byte-level parsing.
+**Rule of thumb**: If the data is naturally line-oriented (distinct lines with different meanings), use `[]string`. For compact formats requiring byte-level parsing, use `[]byte`.
 
-==== Line-Oriented Parsing (Day 24 pattern)
+**Testing helpers available**:
 
-When input has distinct line-based structure (headers, groups, etc.):
+* `linesFromFilename(t, filename)` - returns `[]string` for line-oriented parsers
+* `file(t, day)` - returns `[]byte` for byte-level parsers
+* `exampleFile(t, day)` - returns `[]byte` for examples
+
+==== Line-Oriented Parsing (Day 3, 4, 6, 7 pattern)
+
+When input has distinct line-based structure (headers, groups, structured lines):
 
 [source,go]
 ----
-func NewDayXX(data []byte) (DayXXPuzzle, error) {
-    lines := strings.Split(string(data), "\n")
-
+func NewDayXX(lines []string) (DayXXPuzzle, error) {
     var groups []group
     currentSection := ""
 
@@ -126,6 +130,20 @@ func NewDayXX(data []byte) (DayXXPuzzle, error) {
     }
 
     return DayXXPuzzle{groups: groups}, nil
+}
+----
+
+**Test with**:
+[source,go]
+----
+func TestDayXXPart1(t *testing.T) {
+    lines := linesFromFilename(t, filename(XX))
+    puzzle, err := NewDayXX(lines)
+    if err != nil {
+        t.Fatal(err)
+    }
+    got := DayXX(puzzle, true)
+    // ...
 }
 ----
 
@@ -174,6 +192,24 @@ func NewDayXX(data []byte) (DayXXPuzzle, error) {
 }
 ----
 
+**Test with**:
+[source,go]
+----
+func TestDayXXPart1(t *testing.T) {
+    puzzle, err := NewDayXX(file(t, XX))
+    if err != nil {
+        t.Fatal(err)
+    }
+    got := DayXX(puzzle, true)
+    // ...
+}
+
+// Or use testWithParserBytes helper
+func TestDayXXPart1(t *testing.T) {
+    testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, "answer")
+}
+----
+
 === Solution Function Pattern
 
 The solution function MUST follow this signature:
@@ -197,18 +233,71 @@ func DayXX(puzzle DayXXPuzzle, part1 bool) string {
 
 === Testing Pattern
 
+==== For Line-Oriented Parsers (`[]string`)
+
 [source,go]
 ----
 package adventofcode2018
 
 import "testing"
 
-// Example test (single example)
+func TestDayXXPart1Example(t *testing.T) {
+    lines := linesFromFilename(t, exampleFilename(XX))
+    puzzle, err := NewDayXX(lines)
+    if err != nil {
+        t.Fatal(err)
+    }
+    got := DayXX(puzzle, true)
+    want := "expected"
+    if got != want {
+        t.Errorf("want %s but got %s", want, got)
+    }
+}
+
+func TestDayXXPart1(t *testing.T) {
+    lines := linesFromFilename(t, filename(XX))
+    puzzle, err := NewDayXX(lines)
+    if err != nil {
+        t.Fatal(err)
+    }
+    got := DayXX(puzzle, true)
+    want := "answer"
+    if got != want {
+        t.Errorf("want %s but got %s", want, got)
+    }
+}
+
+func BenchmarkDayXXPart1(b *testing.B) {
+    lines := linesFromFilename(b, filename(XX))
+    for i := 0; i < b.N; i++ {
+        puzzle, _ := NewDayXX(lines)
+        DayXX(puzzle, true)
+    }
+}
+----
+
+==== For Byte-Level Parsers (`[]byte`)
+
+[source,go]
+----
+package adventofcode2018
+
+import "testing"
+
+// Using testWithParserBytes helper (recommended)
 func TestDayXXPart1Example(t *testing.T) {
     testWithParserBytes(t, XX, exampleFile, true, NewDayXX, DayXX, "expected")
 }
 
-// OR: Table-driven examples (multiple examples)
+func TestDayXXPart1(t *testing.T) {
+    testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, "answer")
+}
+
+func BenchmarkDayXXPart1(b *testing.B) {
+    benchWithParserBytes(b, XX, true, NewDayXX, DayXX)
+}
+
+// OR: Manual approach for table-driven tests
 func TestDayXXPart1Examples(t *testing.T) {
     tests := []struct {
         name  string
@@ -231,16 +320,6 @@ func TestDayXXPart1Examples(t *testing.T) {
             }
         })
     }
-}
-
-// Puzzle test (with verified answer)
-func TestDayXXPart1(t *testing.T) {
-    testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, "answer")
-}
-
-// Benchmark
-func BenchmarkDayXXPart1(b *testing.B) {
-    benchWithParserBytes(b, XX, true, NewDayXX, DayXX)
 }
 ----
 
@@ -375,11 +454,12 @@ horizontally.
 
 **Parsing**:
 
-* ❌ Using `strings.Split(string(data), "\n")` as first operation (prefer line-oriented parser design)
-* ❌ Not handling negative numbers
+* ❌ Using `strings.Split(string(data), "\n")` in parser (use `[]string` parameter with `linesFromFilename` instead)
+* ❌ Not handling negative numbers in byte-level parsing
 * ❌ Forgetting to skip delimiters
 * ❌ Off-by-one errors in index iteration
 * ❌ Converting `[]byte` to `string` unnecessarily
+* ❌ Using `[]byte` parser for line-oriented data (use `[]string` instead)
 
 **Algorithm**:
 
