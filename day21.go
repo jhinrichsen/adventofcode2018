@@ -88,12 +88,9 @@ func NewDay21(data []byte) (Day21Puzzle, error) {
 }
 
 // Day21 finds the value for register 0 that causes the program to halt.
-// Part 1: Find the value that halts with fewest instructions.
+// Part 1: Find the value that halts with fewest instructions (first value checked).
+// Part 2: Find the value that halts with most instructions (last unique value before cycle).
 func Day21(puzzle Day21Puzzle, part1 bool) string {
-	if !part1 {
-		return ""
-	}
-
 	opcodes := map[string]func([6]int, int, int, int) [6]int{
 		"addr": addr19, "addi": addi19, "mulr": mulr19, "muli": muli19,
 		"banr": banr19, "bani": bani19, "borr": borr19, "bori": bori19,
@@ -121,11 +118,43 @@ func Day21(puzzle Day21Puzzle, part1 bool) string {
 		}
 	}
 
-	// Run the program until we hit the check instruction
+	// Part 1: Return the first value
+	if part1 {
+		for ip >= 0 && ip < len(puzzle.instructions) {
+			// If we're at the check instruction, return the value
+			if ip == checkIP {
+				return fmt.Sprintf("%d", regs[checkReg])
+			}
+
+			// Write IP to bound register
+			regs[puzzle.ipReg] = ip
+
+			// Execute instruction
+			inst := puzzle.instructions[ip]
+			regs = opcodes[inst.opcode](regs, inst.a, inst.b, inst.c)
+
+			// Read IP from bound register and increment
+			ip = regs[puzzle.ipReg]
+			ip++
+		}
+		return "0"
+	}
+
+	// Part 2: Track all values and return the last one before cycle repeats
+	seen := make(map[int]bool)
+	lastValue := 0
+
 	for ip >= 0 && ip < len(puzzle.instructions) {
-		// If we're at the check instruction, return the value
+		// If we're at the check instruction
 		if ip == checkIP {
-			return fmt.Sprintf("%d", regs[checkReg])
+			val := regs[checkReg]
+			if seen[val] {
+				// We've seen this value before, cycle detected
+				// Return the last unique value
+				return fmt.Sprintf("%d", lastValue)
+			}
+			seen[val] = true
+			lastValue = val
 		}
 
 		// Write IP to bound register
@@ -140,5 +169,5 @@ func Day21(puzzle Day21Puzzle, part1 bool) string {
 		ip++
 	}
 
-	return "0"
+	return fmt.Sprintf("%d", lastValue)
 }
