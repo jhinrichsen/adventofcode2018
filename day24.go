@@ -197,6 +197,9 @@ func Day24(puzzle Day24Puzzle, part1 bool) string {
 			if defenderPtr != nil && defenderPtr.units > 0 {
 				damage := calculateDamage(*attackerPtr, *defenderPtr)
 				unitsKilled := damage / defenderPtr.hp
+				if unitsKilled > defenderPtr.units {
+					unitsKilled = defenderPtr.units
+				}
 				defenderPtr.units -= unitsKilled
 				unitsKilledThisRound += unitsKilled
 			}
