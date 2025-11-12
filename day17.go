@@ -118,7 +118,7 @@ func Day17(puzzle Day17Puzzle, part1 bool) string {
 	flow(&puzzle, 500, 0)
 
 	// Count water tiles within valid y range
-	count := 0
+	count := uint(0)
 	for p, w := range puzzle.water {
 		if p.y >= puzzle.minY && p.y <= puzzle.maxY {
 			if part1 {
