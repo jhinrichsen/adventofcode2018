@@ -58,3 +58,13 @@ func exampleFile(tb testing.TB, day uint8) []byte {
 	}
 	return buf
 }
+
+// example2File reads the second example input file bytes for day N (zero-padded).
+func example2File(tb testing.TB, day uint8) []byte {
+	tb.Helper()
+	buf, err := os.ReadFile(fmt.Sprintf("testdata/day%02d_example2.txt", day))
+	if err != nil {
+		tb.Fatal(err)
+	}
+	return buf
+}
