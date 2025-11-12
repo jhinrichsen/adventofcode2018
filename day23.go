@@ -3,6 +3,7 @@ package adventofcode2018
 import (
 	"container/heap"
 	"math"
+	"math/bits"
 )
 
 // Day23Puzzle represents the nanobots.
@@ -293,9 +294,20 @@ func findBestPosition(bots []nanobot) uint {
 	}
 
 	// Find the smallest power of 2 that contains the bounding box
-	size := uint(1)
-	for int(size) < maxX-minX || int(size) < maxY-minY || int(size) < maxZ-minZ {
-		size *= 2
+	maxDim := maxX - minX
+	if maxY-minY > maxDim {
+		maxDim = maxY - minY
+	}
+	if maxZ-minZ > maxDim {
+		maxDim = maxZ - minZ
+	}
+
+	// Calculate next power of 2 >= maxDim in O(1)
+	var size uint
+	if maxDim <= 0 {
+		size = 1
+	} else {
+		size = 1 << bits.Len(uint(maxDim-1))
 	}
 
 	// Start with the initial region
