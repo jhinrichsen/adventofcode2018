@@ -14,6 +14,10 @@ func TestDay23Part2Example(t *testing.T) {
 	testWithParserBytes(t, 23, example2File, false, NewDay23, Day23, 36)
 }
 
+func TestDay23Part2(t *testing.T) {
+	testWithParserBytes(t, 23, file, false, NewDay23, Day23, 122951778)
+}
+
 func BenchmarkDay23Part1(b *testing.B) {
 	benchWithParserBytes(b, 23, true, NewDay23, Day23)
 }
