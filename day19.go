@@ -1,9 +1,5 @@
 package adventofcode2018
 
-import (
-	"fmt"
-)
-
 // Day19Puzzle represents the device program.
 type Day19Puzzle struct {
 	ipReg        int
@@ -95,7 +91,7 @@ func NewDay19(data []byte) (Day19Puzzle, error) {
 // Day19 executes the program.
 // Part 1: Returns the value in register 0 when the program halts.
 // Part 2: Same but with register 0 starting at 1; uses optimization to avoid slow simulation.
-func Day19(puzzle Day19Puzzle, part1 bool) string {
+func Day19(puzzle Day19Puzzle, part1 bool) uint {
 	regs := [6]int{}
 	if !part1 {
 		// Part 2: Start with register 0 = 1
@@ -139,8 +135,7 @@ func Day19(puzzle Day19Puzzle, part1 bool) string {
 			if ip <= 3 && regs[2] > 1000 {
 				// We've completed initialization; register 2 contains the target number
 				// The program computes sum of divisors of register 2
-				result := sumOfDivisors(regs[2])
-				return fmt.Sprintf("%d", result)
+				return sumOfDivisors(uint(regs[2]))
 			}
 		}
 
@@ -162,7 +157,7 @@ func Day19(puzzle Day19Puzzle, part1 bool) string {
 		ip++
 	}
 
-	return fmt.Sprintf("%d", regs[0])
+	return uint(regs[0])
 }
 
 // Opcode implementations for 6 registers
@@ -273,10 +268,10 @@ func eqrr19(regs [6]int, a, b, c int) [6]int {
 
 // sumOfDivisors calculates the sum of all divisors of n (including 1 and n).
 // Uses an O(√n) algorithm instead of brute force O(n).
-func sumOfDivisors(n int) int {
-	sum := 0
+func sumOfDivisors(n uint) uint {
+	var sum uint
 	// Only iterate up to sqrt(n)
-	for i := 1; i*i <= n; i++ {
+	for i := uint(1); i*i <= n; i++ {
 		if n%i == 0 {
 			sum += i
 			// Add the paired divisor if it's different
