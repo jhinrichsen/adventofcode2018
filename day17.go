@@ -186,11 +186,15 @@ func fillHorizontal(p *Day17Puzzle, x, y, dx int) bool {
 		// Mark as flowing
 		p.water[pos{x, y}] = '|'
 
-		// Check below
-		if !p.clay[pos{x, y + 1}] && p.water[pos{x, y + 1}] != '~' {
-			// Water flows down from here
+		// Check below - need clay or settled water to continue spreading
+		belowPos := pos{x, y + 1}
+		if !p.clay[belowPos] && p.water[belowPos] != '~' {
+			// Water can flow down from here
 			flow(p, x, y+1)
-			return false
+			// After flowing, check if it's now blocked
+			if p.water[belowPos] != '~' {
+				return false
+			}
 		}
 	}
 }

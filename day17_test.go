@@ -7,7 +7,7 @@ func TestDay17Part1Example(t *testing.T) {
 }
 
 func TestDay17Part1(t *testing.T) {
-	testWithParserBytes(t, 17, file, true, NewDay17, Day17, "454")
+	testWithParserBytes(t, 17, file, true, NewDay17, Day17, "37858")
 }
 
 func BenchmarkDay17Part1(b *testing.B) {
