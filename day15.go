@@ -270,7 +270,10 @@ func bfs(grid [][]byte, units []unit, start pos, targets map[pos]bool) *pos {
 				if minDist < 0 {
 					minDist = newDist
 				}
-				reachable = append(reachable, state{pos: np, dist: newDist, firstStep: firstStep})
+				// Only record targets at minimum distance
+				if newDist == minDist {
+					reachable = append(reachable, state{pos: np, dist: newDist, firstStep: firstStep})
+				}
 			} else {
 				queue = append(queue, state{pos: np, dist: newDist, firstStep: firstStep})
 			}
