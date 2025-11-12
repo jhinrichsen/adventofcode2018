@@ -69,3 +69,304 @@ Implementations MUST NOT use `panic()`, instead use error handling.
 
 1. Implement test case for part 2 following the procedure described for part 1.
 
+== Implementation Blueprint and Conventions
+
+This section documents the patterns and conventions established while implementing days 1-25.
+
+=== File Structure
+
+Each day follows this structure:
+
+----
+dayXX.go                    # Implementation
+dayXX_test.go              # Tests and benchmarks
+testdata/dayXX.txt         # Puzzle input
+testdata/dayXX_example.txt # Example input (optional)
+----
+
+=== Parser Function Pattern
+
+The parser MUST follow these rules:
+
+* **Signature**: `func NewDayXX(data []byte) (DayXXPuzzle, error)`
+* **Input**: Raw `[]byte` (never `string`)
+* **Parsing**: Manual index-based iteration (no `strings.Split` for complex parsing)
+* **No recursion**: Use loops for parsing
+* **Error handling**: Return errors for invalid input
+
+[source,go]
+----
+func NewDayXX(data []byte) (DayXXPuzzle, error) {
+    n := len(data)
+    i := 0
+
+    var items []int
+
+    for i < n {
+        // Parse numbers
+        num := 0
+        negative := false
+        if i < n && data[i] == '-' {
+            negative = true
+            i++
+        }
+        for i < n && data[i] >= '0' && data[i] <= '9' {
+            num = num*10 + int(data[i]-'0')
+            i++
+        }
+        if negative {
+            num = -num
+        }
+
+        items = append(items, num)
+
+        // Skip delimiters and whitespace
+        for i < n && (data[i] == ',' || data[i] == ' ') {
+            i++
+        }
+
+        // Skip newlines
+        for i < n && (data[i] == '\n' || data[i] == '\r') {
+            i++
+        }
+    }
+
+    return DayXXPuzzle{items: items}, nil
+}
+----
+
+=== Solution Function Pattern
+
+The solution function MUST follow this signature:
+
+[source,go]
+----
+// DayXX solves the puzzle.
+// Part 1: [Description of what part 1 returns]
+// Part 2: [Description of what part 2 returns]
+func DayXX(puzzle DayXXPuzzle, part1 bool) string {
+    if !part1 {
+        return ""
+    }
+
+    // Solution logic
+    result := solve(puzzle)
+
+    return fmt.Sprintf("%d", result)
+}
+----
+
+=== Testing Pattern
+
+[source,go]
+----
+package adventofcode2018
+
+import "testing"
+
+// Example test (single example)
+func TestDayXXPart1Example(t *testing.T) {
+    testWithParserBytes(t, XX, exampleFile, true, NewDayXX, DayXX, "expected")
+}
+
+// OR: Table-driven examples (multiple examples)
+func TestDayXXPart1Examples(t *testing.T) {
+    tests := []struct {
+        name  string
+        input string
+        want  string
+    }{
+        {"example 1", `input data`, "expected1"},
+        {"example 2", `input data`, "expected2"},
+    }
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            puzzle, err := NewDayXX([]byte(tt.input))
+            if err != nil {
+                t.Fatal(err)
+            }
+            got := DayXX(puzzle, true)
+            if got != tt.want {
+                t.Errorf("want %s but got %s", tt.want, got)
+            }
+        })
+    }
+}
+
+// Puzzle test (with verified answer)
+func TestDayXXPart1(t *testing.T) {
+    testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, "answer")
+}
+
+// Benchmark
+func BenchmarkDayXXPart1(b *testing.B) {
+    benchWithParserBytes(b, XX, true, NewDayXX, DayXX)
+}
+----
+
+=== Common Code Patterns
+
+**Position/Coordinate types**:
+
+[source,go]
+----
+type pos struct {
+    x, y int
+}
+
+type pos3D struct {
+    x, y, z int
+}
+
+type point4D struct {
+    x, y, z, w int
+}
+----
+
+**Helper functions**:
+
+[source,go]
+----
+func abs(x int) int {
+    if x < 0 {
+        return -x
+    }
+    return x
+}
+
+func manhattanDist(x1, y1, x2, y2 int) int {
+    return abs(x2-x1) + abs(y2-y1)
+}
+
+func manhattanDist3D(x1, y1, z1, x2, y2, z2 int) int {
+    return abs(x2-x1) + abs(y2-y1) + abs(z2-z1)
+}
+----
+
+**Grid operations**:
+
+[source,go]
+----
+// Deep copy grid
+func copyGrid(grid [][]byte) [][]byte {
+    copy := make([][]byte, len(grid))
+    for y := range grid {
+        copy[y] = make([]byte, len(grid[y]))
+        for x := range grid[y] {
+            copy[y][x] = grid[y][x]
+        }
+    }
+    return copy
+}
+----
+
+=== Git Commit Messages
+
+Use conventional commit format. **CRITICAL**: Never include puzzle answers in commit messages.
+
+Good examples:
+
+----
+feat: implement day16 part1 chronal classification
+
+Implemented opcode matching for device with 4 registers:
+- 16 opcodes (addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr)
+- Parser for Before/After samples
+- Part 1 counts samples matching 3+ opcodes
+- Added example test validating 3 opcode matches
+----
+
+----
+fix: day17 water flow after settling check
+
+Fixed water spreading logic to properly check if water has settled
+after flowing down. After calling flow() recursively, the function
+now checks if water below has settled (~) before continuing to spread
+horizontally.
+----
+
+=== Code Style
+
+* **No emoji**: Unless explicitly requested
+* **Concise**: Prefer clarity over verbosity
+* **Manual parsing**: Preferred over library functions for complex input
+* **Go idioms**: Follow standard Go conventions
+* **Standard library only**: No external dependencies
+
+=== Common Algorithm Patterns
+
+|===
+|Problem Type |Algorithm |Example Days
+
+|Pathfinding
+|BFS, Dijkstra
+|Day 15, 20, 22
+
+|Graph connectivity
+|Union-Find, DFS
+|Day 25
+
+|Simulation
+|State machine, cellular automaton
+|Day 13, 15, 17, 18, 24
+
+|Pattern matching
+|Regex parsing, manual parsing
+|Day 20
+
+|Virtual machine
+|Interpreter, instruction set
+|Day 16, 19, 21
+
+|Geometry
+|Manhattan distance, grid operations
+|Day 6, 10, 17, 22, 23
+|===
+
+=== Performance Guidelines
+
+* Use maps for sparse data structures
+* Pre-allocate slices when size is known: `make([]int, 0, capacity)`
+* Cache computed values (memoization) when appropriate
+* Profile with benchmarks before optimizing
+* Consider map vs slice based on access patterns
+
+=== Common Pitfalls
+
+**Parsing**:
+
+* ❌ Not handling negative numbers
+* ❌ Forgetting to skip delimiters
+* ❌ Off-by-one errors in index iteration
+* ❌ Using string operations on []byte
+
+**Algorithm**:
+
+* ❌ Not handling edge cases (empty, single item)
+* ❌ Infinite loops in simulation
+* ❌ Incorrect tie-breaking in sorting
+* ❌ Not checking if water/state has settled before continuing
+
+**Testing**:
+
+* ❌ Hardcoding wrong answers in tests
+* ❌ Not testing all examples before puzzle input
+* ❌ **Committing solutions/answers in commit messages**
+* ❌ Not updating tests after bug fixes
+
+=== Testing Workflow
+
+1. **Start with examples**: Implement and pass all provided examples
+2. **Test puzzle input**: Run against actual puzzle input
+3. **Verify answer**: Submit to Advent of Code website
+4. **Update test**: Add verified answer to test file
+5. **Commit**: Commit with descriptive message (no answers!)
+6. **Push**: Push to feature branch
+
+=== Environment
+
+* **Go version**: 1.24 (not 1.25 - avoid network issues)
+* **Platform**: Linux
+* **Test helpers**: `testWithParserBytes`, `benchWithParserBytes`, `exampleFile`, `file`
+
