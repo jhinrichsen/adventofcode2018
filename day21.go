@@ -1,9 +1,5 @@
 package adventofcode2018
 
-import (
-	"fmt"
-)
-
 // Day21Puzzle represents the device program.
 type Day21Puzzle struct {
 	ipReg        int
@@ -90,7 +86,7 @@ func NewDay21(data []byte) (Day21Puzzle, error) {
 // Day21 finds the value for register 0 that causes the program to halt.
 // Part 1: Find the value that halts with fewest instructions (first value checked).
 // Part 2: Find the value that halts with most instructions (last unique value before cycle).
-func Day21(puzzle Day21Puzzle, part1 bool) string {
+func Day21(puzzle Day21Puzzle, part1 bool) uint {
 	opcodes := map[string]func([6]int, int, int, int) [6]int{
 		"addr": addr19, "addi": addi19, "mulr": mulr19, "muli": muli19,
 		"banr": banr19, "bani": bani19, "borr": borr19, "bori": bori19,
@@ -123,7 +119,7 @@ func Day21(puzzle Day21Puzzle, part1 bool) string {
 		for ip >= 0 && ip < len(puzzle.instructions) {
 			// If we're at the check instruction, return the value
 			if ip == checkIP {
-				return fmt.Sprintf("%d", regs[checkReg])
+				return uint(regs[checkReg])
 			}
 
 			// Write IP to bound register
@@ -137,21 +133,21 @@ func Day21(puzzle Day21Puzzle, part1 bool) string {
 			ip = regs[puzzle.ipReg]
 			ip++
 		}
-		return "0"
+		return 0
 	}
 
 	// Part 2: Track all values and return the last one before cycle repeats
-	seen := make(map[int]bool)
-	lastValue := 0
+	seen := make(map[uint]bool)
+	var lastValue uint
 
 	for ip >= 0 && ip < len(puzzle.instructions) {
 		// If we're at the check instruction
 		if ip == checkIP {
-			val := regs[checkReg]
+			val := uint(regs[checkReg])
 			if seen[val] {
 				// We've seen this value before, cycle detected
 				// Return the last unique value
-				return fmt.Sprintf("%d", lastValue)
+				return lastValue
 			}
 			seen[val] = true
 			lastValue = val
@@ -169,5 +165,5 @@ func Day21(puzzle Day21Puzzle, part1 bool) string {
 		ip++
 	}
 
-	return fmt.Sprintf("%d", lastValue)
+	return lastValue
 }
