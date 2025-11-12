@@ -139,9 +139,9 @@ func TestDayXXPart1(t *testing.T) {
         t.Fatal(err)
     }
     got := DayXX(puzzle, true)
-    want := "answer"
+    want := uint(12345)
     if got != want {
-        t.Errorf("want %s but got %s", want, got)
+        t.Errorf("want %d but got %d", want, got)
     }
 }
 
@@ -153,6 +153,8 @@ func BenchmarkDayXXPart1(b *testing.B) {
     }
 }
 ----
+
+**Note**: Use `uint` for numeric answers. Use `string` only for non-numeric answers.
 
 **Examples**: Day 3, 4, 6, 7
 
@@ -166,13 +168,15 @@ func BenchmarkDayXXPart1(b *testing.B) {
 [source,go]
 ----
 func TestDayXXPart1(t *testing.T) {
-    testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, "answer")
+    testWithParserBytes(t, XX, file, true, NewDayXX, DayXX, 12345)
 }
 
 func BenchmarkDayXXPart1(b *testing.B) {
     benchWithParserBytes(b, XX, true, NewDayXX, DayXX)
 }
 ----
+
+**Note**: Use `uint` for counts and numeric answers (no cast needed, type is inferred). Use `string` only for non-numeric answers.
 
 **Examples**: Day 16, 17, 18, 19, 20, 21, 22, 23, 24, 25
 
@@ -212,17 +216,19 @@ For Pattern 1 and 2 (with separate parser):
 // DayXX solves the puzzle.
 // Part 1: [Description of what part 1 returns]
 // Part 2: [Description of what part 2 returns]
-func DayXX(puzzle DayXXPuzzle, part1 bool) string {
+func DayXX(puzzle DayXXPuzzle, part1 bool) uint {
     if !part1 {
-        return ""
+        return 0
     }
 
     // Solution logic
     result := solve(puzzle)
 
-    return fmt.Sprintf("%d", result)
+    return result
 }
 ----
+
+**Note**: Use `uint` for numeric answers (counts, sums, coordinates). Use `string` only for non-numeric answers.
 
 For Pattern 3 (direct solver, no parser):
 
