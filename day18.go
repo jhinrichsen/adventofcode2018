@@ -123,59 +123,48 @@ func resourceValue(grid []byte) uint {
 	return trees * lumberyards
 }
 
-// Day18Part1 simulates 10 minutes and returns the resource value.
-func Day18Part1(p Day18Puzzle) uint {
+// Day18 is a unified solver for both parts.
+// Part 1: simulates 10 minutes.
+// Part 2: simulates 1000000000 minutes using cycle detection.
+func Day18(p Day18Puzzle, part1 bool) uint {
 	current := make([]byte, len(p.grid))
 	copy(current, p.grid)
 
-	for range 10 {
-		current = step(current, p.width, p.height)
+	target := 10
+	if !part1 {
+		target = 1000000000
 	}
 
-	return resourceValue(current)
-}
+	// For part 2, track seen states to detect cycles
+	var seen map[string]int
+	if !part1 {
+		seen = make(map[string]int)
+	}
 
-// Day18Part2 simulates 1000000000 minutes using cycle detection.
-func Day18Part2(p Day18Puzzle) uint {
-	current := make([]byte, len(p.grid))
-	copy(current, p.grid)
-
-	// Track seen states to detect cycles
-	seen := make(map[string]int)
 	minute := 0
-	target := 1000000000
-
 	for minute < target {
-		// Convert current state to string for comparison
-		state := string(current)
-
-		// Check if we've seen this state before
-		if prevMinute, found := seen[state]; found {
-			// Found a cycle!
-			cycleLength := minute - prevMinute
-			// How many complete cycles can we skip?
-			remaining := target - minute
-			fullCycles := remaining / cycleLength
-			minute += fullCycles * cycleLength
-
-			// Clear the cache and continue simulating the remainder
-			seen = make(map[string]int)
+		// For part 2, check for cycles
+		if !part1 {
+			state := string(current)
+			if prevMinute, found := seen[state]; found {
+				// Found a cycle!
+				cycleLength := minute - prevMinute
+				remaining := target - minute
+				fullCycles := remaining / cycleLength
+				minute += fullCycles * cycleLength
+				// Clear the cache and continue simulating the remainder
+				seen = make(map[string]int)
+			}
+			if minute < target {
+				seen[state] = minute
+			}
 		}
 
 		if minute < target {
-			seen[state] = minute
 			current = step(current, p.width, p.height)
 			minute++
 		}
 	}
 
 	return resourceValue(current)
-}
-
-// Day18 is a unified solver for both parts.
-func Day18(p Day18Puzzle, part1 bool) uint {
-	if part1 {
-		return Day18Part1(p)
-	}
-	return Day18Part2(p)
 }
