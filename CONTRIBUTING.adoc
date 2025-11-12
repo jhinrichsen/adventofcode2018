@@ -302,12 +302,26 @@ func copyGrid(grid [][]byte) [][]byte {
 
 === Git Commit Messages
 
-Use conventional commit format. **CRITICAL**: Never include puzzle answers in commit messages (see "Solution Confidentiality" section above).
+Commit messages MUST use conventional commit format with day reference as scope. **CRITICAL**: Never include puzzle answers in commit messages.
+
+**Format**: `<type>(<scope>): <description>`
+
+Where:
+
+* **type**: feat, fix, refactor, test, docs, perf, etc.
+* **scope**: dayXX (e.g., day01, day13, day25)
+* **description**: Brief summary of changes
 
 Good examples:
 
 ----
-feat: implement day16 part1 chronal classification
+feat(day13): add part 2
+
+Implemented cart collision detection with removal logic
+----
+
+----
+feat(day16): implement part 1 chronal classification
 
 Implemented opcode matching for device with 4 registers:
 - 16 opcodes (addr, addi, mulr, muli, banr, bani, borr, bori, setr, seti, gtir, gtri, gtrr, eqir, eqri, eqrr)
@@ -317,7 +331,7 @@ Implemented opcode matching for device with 4 registers:
 ----
 
 ----
-fix: day17 water flow after settling check
+fix(day17): water flow after settling check
 
 Fixed water spreading logic to properly check if water has settled
 after flowing down. After calling flow() recursively, the function
