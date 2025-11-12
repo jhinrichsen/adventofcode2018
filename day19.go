@@ -11,7 +11,7 @@ type Day19Puzzle struct {
 }
 
 type instruction struct {
-	opcode string
+	opcode  string
 	a, b, c int
 }
 

@@ -117,120 +117,120 @@ func Day07(lines []string) (string, error) {
 // Day07Part2 computes the total time to complete all steps with the given
 // number of workers and a base duration where A=1+base, B=2+base, ... Z=26+base.
 func Day07Part2(lines []string, workers, base int) (int, error) {
-    type step = byte
+	type step = byte
 
-    duration := func(st step) int {
-        return int(st-'A'+1) + base
-    }
+	duration := func(st step) int {
+		return int(st-'A'+1) + base
+	}
 
-    // Build graph: lefts (prereqs), rights (successors), and set of steps
-    steps := make(map[step]bool)
-    lefts := make(map[step]map[step]bool)
-    rights := make(map[step]map[step]bool)
+	// Build graph: lefts (prereqs), rights (successors), and set of steps
+	steps := make(map[step]bool)
+	lefts := make(map[step]map[step]bool)
+	rights := make(map[step]map[step]bool)
 
-    order := func(line string) (step, step) {
-        parts := strings.Fields(line)
-        return parts[1][0], parts[7][0]
-    }
+	order := func(line string) (step, step) {
+		parts := strings.Fields(line)
+		return parts[1][0], parts[7][0]
+	}
 
-    for _, line := range lines {
-        l, r := order(line)
-        steps[l] = true
-        steps[r] = true
-        if _, ok := lefts[r]; !ok {
-            lefts[r] = make(map[step]bool)
-        }
-        lefts[r][l] = true
-        if _, ok := rights[l]; !ok {
-            rights[l] = make(map[step]bool)
-        }
-        rights[l][r] = true
-    }
+	for _, line := range lines {
+		l, r := order(line)
+		steps[l] = true
+		steps[r] = true
+		if _, ok := lefts[r]; !ok {
+			lefts[r] = make(map[step]bool)
+		}
+		lefts[r][l] = true
+		if _, ok := rights[l]; !ok {
+			rights[l] = make(map[step]bool)
+		}
+		rights[l][r] = true
+	}
 
-    // Helper to check if all prereqs are done
-    dones := make(map[step]bool)
-    isReady := func(st step) bool {
-        befores, ok := lefts[st]
-        if !ok || len(befores) == 0 {
-            return true
-        }
-        for k := range befores {
-            if !dones[k] {
-                return false
-            }
-        }
-        return true
-    }
+	// Helper to check if all prereqs are done
+	dones := make(map[step]bool)
+	isReady := func(st step) bool {
+		befores, ok := lefts[st]
+		if !ok || len(befores) == 0 {
+			return true
+		}
+		for k := range befores {
+			if !dones[k] {
+				return false
+			}
+		}
+		return true
+	}
 
-    // Priority queue of available steps (as map, we will select smallest each tick)
-    available := make(map[step]bool)
-    for st := range steps {
-        if len(lefts[st]) == 0 {
-            available[st] = true
-        }
-    }
+	// Priority queue of available steps (as map, we will select smallest each tick)
+	available := make(map[step]bool)
+	for st := range steps {
+		if len(lefts[st]) == 0 {
+			available[st] = true
+		}
+	}
 
-    // Workers state
-    type worker struct {
-        busy bool
-        st   step
-        rem  int
-    }
-    ws := make([]worker, workers)
+	// Workers state
+	type worker struct {
+		busy bool
+		st   step
+		rem  int
+	}
+	ws := make([]worker, workers)
 
-    time := 0
-    doneCount := 0
-    total := len(steps)
+	time := 0
+	doneCount := 0
+	total := len(steps)
 
-    for doneCount < total {
-        // Assign available tasks to idle workers in alphabetical order
-        // Gather ready tasks from available where prereqs satisfied and not currently in progress
-        inProgress := make(map[step]bool)
-        for _, w := range ws {
-            if w.busy {
-                inProgress[w.st] = true
-            }
-        }
-        var ready []step
-        for st := range available {
-            if !inProgress[st] && isReady(st) {
-                ready = append(ready, st)
-            }
-        }
-        sort.Slice(ready, func(i, j int) bool { return ready[i] < ready[j] })
-        // Fill idle workers
-        ridx := 0
-        for i := range ws {
-            if !ws[i].busy && ridx < len(ready) {
-                st := ready[ridx]
-                ridx++
-                ws[i] = worker{busy: true, st: st, rem: duration(st)}
-                delete(available, st) // taken
-            }
-        }
+	for doneCount < total {
+		// Assign available tasks to idle workers in alphabetical order
+		// Gather ready tasks from available where prereqs satisfied and not currently in progress
+		inProgress := make(map[step]bool)
+		for _, w := range ws {
+			if w.busy {
+				inProgress[w.st] = true
+			}
+		}
+		var ready []step
+		for st := range available {
+			if !inProgress[st] && isReady(st) {
+				ready = append(ready, st)
+			}
+		}
+		sort.Slice(ready, func(i, j int) bool { return ready[i] < ready[j] })
+		// Fill idle workers
+		ridx := 0
+		for i := range ws {
+			if !ws[i].busy && ridx < len(ready) {
+				st := ready[ridx]
+				ridx++
+				ws[i] = worker{busy: true, st: st, rem: duration(st)}
+				delete(available, st) // taken
+			}
+		}
 
-        // Advance time by 1 second
-        time++
-        // Tick workers and complete tasks finishing now
-        for i := range ws {
-            if ws[i].busy {
-                ws[i].rem--
-                if ws[i].rem == 0 {
-                    finished := ws[i].st
-                    ws[i] = worker{} // now idle
-                    // mark done
-                    dones[finished] = true
-                    doneCount++
-                    // add successors to available
-                    for succ := range rights[finished] {
-                        if !dones[succ] {
-                            available[succ] = true
-                        }
-                    }
-                }
-            }
-        }
-    }
+		// Advance time by 1 second
+		time++
+		// Tick workers and complete tasks finishing now
+		for i := range ws {
+			if ws[i].busy {
+				ws[i].rem--
+				if ws[i].rem == 0 {
+					finished := ws[i].st
+					ws[i] = worker{} // now idle
+					// mark done
+					dones[finished] = true
+					doneCount++
+					// add successors to available
+					for succ := range rights[finished] {
+						if !dones[succ] {
+							available[succ] = true
+						}
+					}
+				}
+			}
+		}
+	}
 
-    return time, nil
+	return time, nil
 }

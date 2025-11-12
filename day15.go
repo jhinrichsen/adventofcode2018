@@ -12,9 +12,9 @@ type Day15Puzzle struct {
 }
 
 type unit struct {
-	x, y     int
-	hp       int
-	isElf    bool
+	x, y        int
+	hp          int
+	isElf       bool
 	attackPower int
 }
 

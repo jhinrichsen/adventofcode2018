@@ -13,15 +13,15 @@ type Day24Puzzle struct {
 }
 
 type group struct {
-	id          int
-	army        string // "immune" or "infection"
-	units       int
-	hp          int
-	weaknesses  []string
-	immunities  []string
-	attackDmg   int
-	attackType  string
-	initiative  int
+	id         int
+	army       string // "immune" or "infection"
+	units      int
+	hp         int
+	weaknesses []string
+	immunities []string
+	attackDmg  int
+	attackType string
+	initiative int
 }
 
 // NewDay24 parses the army groups.
@@ -316,4 +316,3 @@ func selectTargets(groups []group) map[string]string {
 
 	return targets
 }
-
