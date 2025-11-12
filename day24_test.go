@@ -18,21 +18,21 @@ func TestDay24ExampleTimeline(t *testing.T) {
 
 	// Expected state after each round from AoC description
 	tests := []struct {
-		round       int
-		immune1     int
-		immune2     int
-		infection1  int
-		infection2  int
+		round      int
+		immune1    int
+		immune2    int
+		infection1 int
+		infection2 int
 	}{
-		{0, 17, 989, 801, 4485},    // Initial
-		{1, 0, 905, 797, 4434},      // After round 1
-		{2, 0, 761, 793, 4434},      // After round 2
-		{3, 0, 618, 789, 4434},      // After round 3
-		{4, 0, 475, 786, 4434},      // After round 4
-		{5, 0, 333, 784, 4434},      // After round 5
-		{6, 0, 191, 783, 4434},      // After round 6
-		{7, 0, 49, 782, 4434},       // After round 7
-		{8, 0, 0, 782, 4434},        // Final: immune eliminated
+		{0, 17, 989, 801, 4485}, // Initial
+		{1, 0, 905, 797, 4434},  // After round 1
+		{2, 0, 761, 793, 4434},  // After round 2
+		{3, 0, 618, 789, 4434},  // After round 3
+		{4, 0, 475, 786, 4434},  // After round 4
+		{5, 0, 333, 784, 4434},  // After round 5
+		{6, 0, 191, 783, 4434},  // After round 6
+		{7, 0, 49, 782, 4434},   // After round 7
+		{8, 0, 0, 782, 4434},    // Final: immune eliminated
 	}
 
 	immune := make([]group, len(puzzle.immuneSystem))
@@ -63,7 +63,7 @@ func TestDay24ExampleTimeline(t *testing.T) {
 		}
 
 		if immune1Units != tt.immune1 || immune2Units != tt.immune2 ||
-		   infect1Units != tt.infection1 || infect2Units != tt.infection2 {
+			infect1Units != tt.infection1 || infect2Units != tt.infection2 {
 			t.Errorf("round %d: got immune=[%d,%d] infection=[%d,%d], want immune=[%d,%d] infection=[%d,%d]",
 				tt.round, immune1Units, immune2Units, infect1Units, infect2Units,
 				tt.immune1, tt.immune2, tt.infection1, tt.infection2)
