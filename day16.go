@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-const beforePrefix = "Before:"
-
 // Sample represents a before/after observation with an instruction
 type Sample struct {
 	Before [4]int
@@ -100,7 +98,7 @@ func parseInts(line string) ([4]int, error) {
 
 	numIdx := 0
 	for _, field := range fields {
-		if field == "" || field == beforePrefix[:len(beforePrefix)-1] || field == "After" {
+		if field == "" || field == "Before" || field == "After" {
 			continue
 		}
 		num, err := strconv.Atoi(field)
@@ -118,6 +116,8 @@ func parseInts(line string) ([4]int, error) {
 
 // NewDay16 parses the input lines into samples and test program
 func NewDay16(lines []string) (*Day16Puzzle, error) {
+	const beforePrefix = "Before:"
+
 	samples := []Sample{}
 	var programStart int
 
@@ -194,8 +194,8 @@ func matchesOp(s Sample, opFunc OpFunc) bool {
 }
 
 // Day16Part1 counts samples that behave like 3 or more opcodes
-func Day16Part1(puzzle *Day16Puzzle) int {
-	count := 0
+func Day16Part1(puzzle *Day16Puzzle) uint {
+	var count uint
 
 	for _, sample := range puzzle.Samples {
 		matches := 0

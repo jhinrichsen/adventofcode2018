@@ -3,9 +3,8 @@ package adventofcode2018
 import "testing"
 
 func TestDay16Part1(t *testing.T) {
-	const want = 607
-	buf := file(t, 16)
-	lines := Lines(string(buf))
+	const want uint = 607
+	lines := linesFromFilename(t, filename(16))
 	puzzle, err := NewDay16(lines)
 	if err != nil {
 		t.Fatal(err)
@@ -18,8 +17,7 @@ func TestDay16Part1(t *testing.T) {
 
 func TestDay16Part2(t *testing.T) {
 	const want = 577
-	buf := file(t, 16)
-	lines := Lines(string(buf))
+	lines := linesFromFilename(t, filename(16))
 	puzzle, err := NewDay16(lines)
 	if err != nil {
 		t.Fatal(err)
@@ -31,8 +29,7 @@ func TestDay16Part2(t *testing.T) {
 }
 
 func BenchmarkDay16Part1(b *testing.B) {
-	buf := file(b, 16)
-	lines := Lines(string(buf))
+	lines := linesFromFilename(b, filename(16))
 	for b.Loop() {
 		puzzle, _ := NewDay16(lines)
 		_ = Day16Part1(puzzle)
@@ -40,8 +37,7 @@ func BenchmarkDay16Part1(b *testing.B) {
 }
 
 func BenchmarkDay16Part2(b *testing.B) {
-	buf := file(b, 16)
-	lines := Lines(string(buf))
+	lines := linesFromFilename(b, filename(16))
 	for b.Loop() {
 		puzzle, _ := NewDay16(lines)
 		_ = Day16Part2(puzzle)
