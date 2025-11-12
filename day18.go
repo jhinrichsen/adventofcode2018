@@ -1,145 +1,149 @@
 package adventofcode2018
 
-import (
-	"fmt"
-)
-
-// Day18Puzzle represents the lumber collection area.
+// Day18Puzzle represents the lumber collection area grid.
 type Day18Puzzle struct {
-	grid [][]byte
+	grid   []byte
+	width  int
+	height int
 }
 
-// NewDay18 parses the initial grid state.
-func NewDay18(data []byte) (Day18Puzzle, error) {
-	n := len(data)
-	i := 0
-
-	var grid [][]byte
-
-	for i < n {
-		start := i
-		// Read until newline
-		for i < n && data[i] != '\n' && data[i] != '\r' {
-			i++
-		}
-		if i > start {
-			line := make([]byte, i-start)
-			copy(line, data[start:i])
-			grid = append(grid, line)
-		}
-		// Skip newlines
-		for i < n && (data[i] == '\n' || data[i] == '\r') {
-			i++
-		}
+// NewDay18 parses the lumber collection area grid from lines.
+func NewDay18(lines []string) (Day18Puzzle, error) {
+	if len(lines) == 0 {
+		return Day18Puzzle{}, nil
 	}
 
-	return Day18Puzzle{grid: grid}, nil
+	width := len(lines[0])
+	height := len(lines)
+
+	// Create flat grid without newlines
+	grid := make([]byte, 0, width*height)
+	for _, line := range lines {
+		grid = append(grid, []byte(line)...)
+	}
+
+	return Day18Puzzle{
+		grid:   grid,
+		width:  width,
+		height: height,
+	}, nil
 }
 
-// Day18 simulates the lumber collection.
-// Part 1: Resource value after 10 minutes.
-func Day18(puzzle Day18Puzzle, part1 bool) string {
-	if !part1 {
-		return ""
-	}
-
-	grid := copyGrid(puzzle.grid)
-
-	// Simulate 10 minutes
-	for minute := 0; minute < 10; minute++ {
-		grid = step(grid)
-	}
-
-	// Count wooded acres and lumberyards
-	trees := 0
-	lumberyards := 0
-	for y := range grid {
-		for x := range grid[y] {
-			if grid[y][x] == '|' {
-				trees++
-			} else if grid[y][x] == '#' {
-				lumberyards++
-			}
-		}
-	}
-
-	return fmt.Sprintf("%d", trees*lumberyards)
-}
-
-// step simulates one minute of transformation.
-func step(grid [][]byte) [][]byte {
-	height := len(grid)
-	width := len(grid[0])
-	next := make([][]byte, height)
-	for y := range next {
-		next[y] = make([]byte, width)
-	}
-
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			neighbors := countNeighbors(grid, x, y)
-			current := grid[y][x]
-
-			switch current {
-			case '.': // Open ground
-				// Becomes trees if 3+ adjacent trees
-				if neighbors['|'] >= 3 {
-					next[y][x] = '|'
-				} else {
-					next[y][x] = '.'
-				}
-			case '|': // Trees
-				// Becomes lumberyard if 3+ adjacent lumberyards
-				if neighbors['#'] >= 3 {
-					next[y][x] = '#'
-				} else {
-					next[y][x] = '|'
-				}
-			case '#': // Lumberyard
-				// Remains lumberyard if adjacent to 1+ lumberyard AND 1+ trees
-				if neighbors['#'] >= 1 && neighbors['|'] >= 1 {
-					next[y][x] = '#'
-				} else {
-					next[y][x] = '.'
-				}
-			}
-		}
-	}
-
-	return next
-}
-
-// countNeighbors counts the types of adjacent acres.
-func countNeighbors(grid [][]byte, x, y int) map[byte]int {
-	counts := make(map[byte]int)
-	height := len(grid)
-	width := len(grid[0])
-
-	// Check all 8 adjacent positions
+// countAdjacent counts how many of the 8 neighbors match the target character.
+func countAdjacent(grid []byte, width, height, x, y int, target byte) uint {
+	count := uint(0)
 	for dy := -1; dy <= 1; dy++ {
 		for dx := -1; dx <= 1; dx++ {
 			if dx == 0 && dy == 0 {
 				continue
 			}
-			ny := y + dy
-			nx := x + dx
-			if ny >= 0 && ny < height && nx >= 0 && nx < width {
-				counts[grid[ny][nx]]++
+			nx, ny := x+dx, y+dy
+			if nx >= 0 && nx < width && ny >= 0 && ny < height {
+				if grid[ny*width+nx] == target {
+					count++
+				}
 			}
 		}
 	}
-
-	return counts
+	return count
 }
 
-// copyGrid creates a deep copy of the grid.
-func copyGrid(grid [][]byte) [][]byte {
-	copy := make([][]byte, len(grid))
-	for y := range grid {
-		copy[y] = make([]byte, len(grid[y]))
-		for x := range grid[y] {
-			copy[y][x] = grid[y][x]
+// step simulates one minute of the lumber collection area.
+func step(grid []byte, width, height int) []byte {
+	next := make([]byte, len(grid))
+	for y := range height {
+		for x := range width {
+			idx := y*width + x
+			current := grid[idx]
+
+			switch current {
+			case '.': // open ground
+				// Becomes trees if 3+ adjacent are trees
+				if countAdjacent(grid, width, height, x, y, '|') >= 3 {
+					next[idx] = '|'
+				} else {
+					next[idx] = '.'
+				}
+			case '|': // trees
+				// Becomes lumberyard if 3+ adjacent are lumberyards
+				if countAdjacent(grid, width, height, x, y, '#') >= 3 {
+					next[idx] = '#'
+				} else {
+					next[idx] = '|'
+				}
+			case '#': // lumberyard
+				// Stays lumberyard if adjacent to at least 1 lumberyard AND 1 trees
+				// Otherwise becomes open ground
+				if countAdjacent(grid, width, height, x, y, '#') >= 1 &&
+					countAdjacent(grid, width, height, x, y, '|') >= 1 {
+					next[idx] = '#'
+				} else {
+					next[idx] = '.'
+				}
+			}
 		}
 	}
-	return copy
+	return next
+}
+
+// resourceValue calculates the total resource value (wooded acres * lumberyards).
+func resourceValue(grid []byte) uint {
+	var trees, lumberyards uint
+	for _, cell := range grid {
+		if cell == '|' {
+			trees++
+		} else if cell == '#' {
+			lumberyards++
+		}
+	}
+	return trees * lumberyards
+}
+
+// Day18Part1 simulates 10 minutes and returns the resource value.
+func Day18Part1(p Day18Puzzle) uint {
+	current := make([]byte, len(p.grid))
+	copy(current, p.grid)
+
+	for range 10 {
+		current = step(current, p.width, p.height)
+	}
+
+	return resourceValue(current)
+}
+
+// Day18Part2 simulates 1000000000 minutes using cycle detection.
+func Day18Part2(p Day18Puzzle) uint {
+	current := make([]byte, len(p.grid))
+	copy(current, p.grid)
+
+	// Track seen states to detect cycles
+	seen := make(map[string]int)
+	minute := 0
+	target := 1000000000
+
+	for minute < target {
+		// Convert current state to string for comparison
+		state := string(current)
+
+		// Check if we've seen this state before
+		if prevMinute, found := seen[state]; found {
+			// Found a cycle!
+			cycleLength := minute - prevMinute
+			// How many complete cycles can we skip?
+			remaining := target - minute
+			fullCycles := remaining / cycleLength
+			minute += fullCycles * cycleLength
+
+			// Clear the cache and continue simulating the remainder
+			seen = make(map[string]int)
+		}
+
+		if minute < target {
+			seen[state] = minute
+			current = step(current, p.width, p.height)
+			minute++
+		}
+	}
+
+	return resourceValue(current)
 }
