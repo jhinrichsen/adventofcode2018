@@ -30,11 +30,11 @@ func TestDay20Part1Examples(t *testing.T) {
 }
 
 func TestDay20Part1(t *testing.T) {
-	testWithParserBytes(t, 20, file, true, NewDay20, Day20, uint(3755))
+	testWithParserBytes(t, 20, file, true, NewDay20, Day20, 3755)
 }
 
 func TestDay20Part2(t *testing.T) {
-	testWithParserBytes(t, 20, file, false, NewDay20, Day20, uint(8627))
+	testWithParserBytes(t, 20, file, false, NewDay20, Day20, 8627)
 }
 
 func BenchmarkDay20Part1(b *testing.B) {
