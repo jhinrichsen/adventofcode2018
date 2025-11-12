@@ -198,6 +198,7 @@ func isToolValid(tool, regionType int) bool {
 func findShortestPath(puzzle Day22Puzzle) int {
 	erosion := make(map[pos]int)
 	dist := make(map[state]int)
+	visited := make(map[state]bool)
 
 	// Start at (0,0) with torch equipped
 	start := state{0, 0, torch}
@@ -215,14 +216,15 @@ func findShortestPath(puzzle Day22Puzzle) int {
 		current := item.st
 		currentDist := item.priority
 
+		// Skip if already visited
+		if visited[current] {
+			continue
+		}
+		visited[current] = true
+
 		// If we reached the target, return the distance
 		if current == target {
 			return currentDist
-		}
-
-		// Skip if we've already found a better path
-		if d, ok := dist[current]; ok && currentDist > d {
-			continue
 		}
 
 		// Try moving to adjacent cells with the same tool
@@ -238,6 +240,13 @@ func findShortestPath(puzzle Day22Puzzle) int {
 				continue
 			}
 
+			newState := state{nx, ny, current.tool}
+
+			// Skip if already visited
+			if visited[newState] {
+				continue
+			}
+
 			// Check if current tool is valid in the new region
 			newRegionType := getRegionType(nx, ny, puzzle, erosion)
 			if !isToolValid(current.tool, newRegionType) {
@@ -245,7 +254,6 @@ func findShortestPath(puzzle Day22Puzzle) int {
 			}
 
 			// Moving takes 1 minute
-			newState := state{nx, ny, current.tool}
 			newDist := currentDist + 1
 
 			if d, ok := dist[newState]; !ok || newDist < d {
@@ -261,13 +269,19 @@ func findShortestPath(puzzle Day22Puzzle) int {
 				continue
 			}
 
+			newState := state{current.x, current.y, tool}
+
+			// Skip if already visited
+			if visited[newState] {
+				continue
+			}
+
 			// Check if the new tool is valid for current region
 			if !isToolValid(tool, currentRegionType) {
 				continue
 			}
 
 			// Switching tools takes 7 minutes
-			newState := state{current.x, current.y, tool}
 			newDist := currentDist + 7
 
 			if d, ok := dist[newState]; !ok || newDist < d {
