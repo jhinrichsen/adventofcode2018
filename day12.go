@@ -79,10 +79,11 @@ func NewDay12(data []byte) (Day12Puzzle, error) {
 
 // Day12 simulates plant growth.
 // Part 1: Returns the sum of pot numbers after 20 generations.
+// Part 2: Returns the sum after 50 billion generations by detecting pattern.
 func Day12(puzzle Day12Puzzle, part1 bool) string {
+	generations := 20
 	if !part1 {
-		// Part 2 not implemented yet
-		return ""
+		generations = 50000000000
 	}
 
 	// Initialize plants map
@@ -93,12 +94,21 @@ func Day12(puzzle Day12Puzzle, part1 bool) string {
 		}
 	}
 
-	// Simulate 20 generations
-	for gen := 0; gen < 20; gen++ {
+	// For part 2, detect when pattern stabilizes
+	var prevSum, prevDiff int
+	stableCount := 0
+
+	for gen := 0; gen < generations; gen++ {
 		// Find bounds
 		minPot := 0
 		maxPot := 0
+		first := true
 		for pot := range plants {
+			if first {
+				minPot = pot
+				maxPot = pot
+				first = false
+			}
 			if pot < minPot {
 				minPot = pot
 			}
@@ -131,6 +141,30 @@ func Day12(puzzle Day12Puzzle, part1 bool) string {
 		}
 
 		plants = nextPlants
+
+		// For part 2, detect stable pattern
+		if !part1 && gen > 100 {
+			sum := 0
+			for pot := range plants {
+				sum += pot
+			}
+
+			diff := sum - prevSum
+			if diff == prevDiff {
+				stableCount++
+				if stableCount > 10 {
+					// Pattern is stable, extrapolate
+					remaining := generations - gen - 1
+					finalSum := sum + (remaining * diff)
+					return fmt.Sprintf("%d", finalSum)
+				}
+			} else {
+				stableCount = 0
+			}
+
+			prevSum = sum
+			prevDiff = diff
+		}
 	}
 
 	// Sum pot numbers with plants
