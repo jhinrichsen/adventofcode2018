@@ -7,15 +7,7 @@ import (
 )
 
 func TestDay24Part1Example(t *testing.T) {
-	puzzle, err := NewDay24(exampleFile(t, 24))
-	if err != nil {
-		t.Fatal(err)
-	}
-	got := Day24(puzzle, true)
-	const want = "5216"
-	if got != want {
-		t.Errorf("got %s, want %s", got, want)
-	}
+	testWithParserBytes(t, 24, exampleFile, true, NewDay24, Day24, 5216)
 }
 
 func TestDay24ExampleTimeline(t *testing.T) {
@@ -150,7 +142,7 @@ func TestDay24ExampleTimeline(t *testing.T) {
 }
 
 func TestDay24Part1(t *testing.T) {
-	testWithParserBytes(t, 24, file, true, NewDay24, Day24, "16530")
+	testWithParserBytes(t, 24, file, true, NewDay24, Day24, 16530)
 }
 
 func TestDay24Part2ExampleWithBoost(t *testing.T) {
@@ -170,19 +162,11 @@ func TestDay24Part2ExampleWithBoost(t *testing.T) {
 }
 
 func TestDay24Part2Example(t *testing.T) {
-	puzzle, err := NewDay24(exampleFile(t, 24))
-	if err != nil {
-		t.Fatal(err)
-	}
-	got := Day24(puzzle, false)
-	const want = "51"
-	if got != want {
-		t.Errorf("got %s, want %s", got, want)
-	}
+	testWithParserBytes(t, 24, exampleFile, false, NewDay24, Day24, 51)
 }
 
 func TestDay24Part2(t *testing.T) {
-	testWithParserBytes(t, 24, file, false, NewDay24, Day24, "757")
+	testWithParserBytes(t, 24, file, false, NewDay24, Day24, 757)
 }
 
 func BenchmarkDay24Part1(b *testing.B) {

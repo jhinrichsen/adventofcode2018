@@ -140,17 +140,17 @@ func parseGroup(line string, id int, army string) group {
 // Day24 simulates the combat.
 // Part 1: Returns the number of units in the winning army.
 // Part 2: Returns the number of units the immune system has after winning with the smallest boost.
-func Day24(puzzle Day24Puzzle, part1 bool) string {
+func Day24(puzzle Day24Puzzle, part1 bool) uint {
 	if part1 {
 		_, units := simulateCombat(puzzle, 0)
-		return fmt.Sprintf("%d", units)
+		return uint(units)
 	}
 
 	// Part 2: Find smallest boost for immune system to win
 	for boost := 1; ; boost++ {
 		winner, units := simulateCombat(puzzle, boost)
 		if winner == "immune" {
-			return fmt.Sprintf("%d", units)
+			return uint(units)
 		}
 	}
 }
