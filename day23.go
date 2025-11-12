@@ -156,8 +156,8 @@ func manhattanDist3D(x1, y1, z1, x2, y2, z2 int) uint {
 // region represents a 3D cube region.
 type region struct {
 	x, y, z      int  // bottom-left-front corner
-	size         int  // length of each side
-	inRange      int  // number of bots that can reach this region
+	size         uint // length of each side
+	inRange      uint // number of bots that can reach this region
 	distToOrigin uint // minimum distance from this region to origin
 }
 
@@ -195,33 +195,37 @@ func (pq *regionQueue) Pop() interface{} {
 
 // distToRegion calculates the minimum Manhattan distance from a nanobot to a region.
 func distToRegion(bot nanobot, r region) uint {
+	maxX := r.x + int(r.size) - 1
+	maxY := r.y + int(r.size) - 1
+	maxZ := r.z + int(r.size) - 1
+
 	dx := 0
 	if bot.x < r.x {
 		dx = r.x - bot.x
-	} else if bot.x > r.x+r.size-1 {
-		dx = bot.x - (r.x + r.size - 1)
+	} else if bot.x > maxX {
+		dx = bot.x - maxX
 	}
 
 	dy := 0
 	if bot.y < r.y {
 		dy = r.y - bot.y
-	} else if bot.y > r.y+r.size-1 {
-		dy = bot.y - (r.y + r.size - 1)
+	} else if bot.y > maxY {
+		dy = bot.y - maxY
 	}
 
 	dz := 0
 	if bot.z < r.z {
 		dz = r.z - bot.z
-	} else if bot.z > r.z+r.size-1 {
-		dz = bot.z - (r.z + r.size - 1)
+	} else if bot.z > maxZ {
+		dz = bot.z - maxZ
 	}
 
 	return uint(dx + dy + dz)
 }
 
 // countBotsInRange counts how many bots can reach this region.
-func countBotsInRange(bots []nanobot, r region) int {
-	count := 0
+func countBotsInRange(bots []nanobot, r region) uint {
+	count := uint(0)
 	for _, bot := range bots {
 		if distToRegion(bot, r) <= uint(bot.r) {
 			count++
@@ -232,25 +236,29 @@ func countBotsInRange(bots []nanobot, r region) int {
 
 // minDistToOrigin calculates the minimum Manhattan distance from region to origin.
 func minDistToOrigin(r region) uint {
+	maxX := r.x + int(r.size) - 1
+	maxY := r.y + int(r.size) - 1
+	maxZ := r.z + int(r.size) - 1
+
 	dx := 0
 	if r.x > 0 {
 		dx = r.x
-	} else if r.x+r.size-1 < 0 {
-		dx = -(r.x + r.size - 1)
+	} else if maxX < 0 {
+		dx = -maxX
 	}
 
 	dy := 0
 	if r.y > 0 {
 		dy = r.y
-	} else if r.y+r.size-1 < 0 {
-		dy = -(r.y + r.size - 1)
+	} else if maxY < 0 {
+		dy = -maxY
 	}
 
 	dz := 0
 	if r.z > 0 {
 		dz = r.z
-	} else if r.z+r.size-1 < 0 {
-		dz = -(r.z + r.size - 1)
+	} else if maxZ < 0 {
+		dz = -maxZ
 	}
 
 	return uint(dx + dy + dz)
@@ -285,8 +293,8 @@ func findBestPosition(bots []nanobot) uint {
 	}
 
 	// Find the smallest power of 2 that contains the bounding box
-	size := 1
-	for size < maxX-minX || size < maxY-minY || size < maxZ-minZ {
+	size := uint(1)
+	for int(size) < maxX-minX || int(size) < maxY-minY || int(size) < maxZ-minZ {
 		size *= 2
 	}
 
@@ -313,13 +321,14 @@ func findBestPosition(bots []nanobot) uint {
 
 		// Split into 8 octants
 		newSize := r.size / 2
+		offset := int(newSize)
 		for dx := 0; dx < 2; dx++ {
 			for dy := 0; dy < 2; dy++ {
 				for dz := 0; dz < 2; dz++ {
 					newRegion := region{
-						x:    r.x + dx*newSize,
-						y:    r.y + dy*newSize,
-						z:    r.z + dz*newSize,
+						x:    r.x + dx*offset,
+						y:    r.y + dy*offset,
+						z:    r.z + dz*offset,
 						size: newSize,
 					}
 					newRegion.inRange = countBotsInRange(bots, newRegion)
