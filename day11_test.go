@@ -54,7 +54,7 @@ func TestDay11Part2Examples(t *testing.T) {
 }
 
 func TestDay11Part2(t *testing.T) {
-	testWithParserBytes(t, 11, file, false, NewDay11, Day11, "231,107,14")
+	testWithParserBytes(t, 11, file, false, NewDay11, Day11, "229,192,11")
 }
 
 func BenchmarkDay11Part2(b *testing.B) {
