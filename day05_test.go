@@ -194,3 +194,15 @@ func BenchmarkDay05Part1(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkDay05Part2(b *testing.B) {
+	buf, err := os.ReadFile(filename(5))
+	if err != nil {
+		b.Fatal(err)
+	}
+	polymer := strings.TrimSpace(string(buf))
+	b.ResetTimer()
+	for b.Loop() {
+		_ = day05Part2(polymer)
+	}
+}
