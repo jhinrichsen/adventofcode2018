@@ -1,9 +1,5 @@
 package adventofcode2018
 
-import (
-	"fmt"
-)
-
 // Day20Puzzle represents the facility regex.
 type Day20Puzzle struct {
 	regex string
@@ -24,7 +20,7 @@ func NewDay20(data []byte) (Day20Puzzle, error) {
 // Day20 finds the furthest room.
 // Part 1: Returns the maximum number of doors to reach any room.
 // Part 2: Returns the number of rooms that require at least 1000 doors.
-func Day20(puzzle Day20Puzzle, part1 bool) string {
+func Day20(puzzle Day20Puzzle, part1 bool) uint {
 	// Build the map by following all paths
 	doors := make(map[pos]map[pos]bool) // doors[pos1][pos2] = true means door between pos1 and pos2
 
@@ -62,9 +58,9 @@ func Day20(puzzle Day20Puzzle, part1 bool) string {
 	}
 
 	if part1 {
-		return fmt.Sprintf("%d", maxDist)
+		return uint(maxDist)
 	}
-	return fmt.Sprintf("%d", countFar)
+	return uint(countFar)
 }
 
 // buildMap constructs the map by parsing the regex and following all paths.
