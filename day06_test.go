@@ -264,3 +264,19 @@ func TestDay06Part2(t *testing.T) {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
+
+func BenchmarkDay06Part1(b *testing.B) {
+	lines := linesFromFilename(b, filename(6))
+	for b.Loop() {
+		ps, _ := coordinates(lines)
+		_ = day06(ps)
+	}
+}
+
+func BenchmarkDay06Part2(b *testing.B) {
+	lines := linesFromFilename(b, filename(6))
+	for b.Loop() {
+		ps, _ := coordinates(lines)
+		_ = day06Part2(ps, 10000)
+	}
+}
