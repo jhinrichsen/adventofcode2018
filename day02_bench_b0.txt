@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+BenchmarkDay02Part1-16    	    1515	    717584 ns/op	  468004 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1663	    737753 ns/op	  468001 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1538	    712450 ns/op	  468000 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1695	    719352 ns/op	  468000 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1570	    750117 ns/op	  468001 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1533	    750113 ns/op	  468004 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1597	    754854 ns/op	  468001 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1636	    765819 ns/op	  468000 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1639	    729026 ns/op	  468001 B/op	    2500 allocs/op
+BenchmarkDay02Part1-16    	    1665	    740999 ns/op	  468001 B/op	    2500 allocs/op
+BenchmarkDay02Part2-16    	     439	   2881072 ns/op	 1210820 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     417	   2843840 ns/op	 1210821 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     427	   2894404 ns/op	 1210820 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     409	   2824314 ns/op	 1210821 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     415	   2841888 ns/op	 1210822 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     428	   2885307 ns/op	 1210821 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     372	   2825945 ns/op	 1210822 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     430	   2777243 ns/op	 1210822 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     433	   2815814 ns/op	 1210822 B/op	   60512 allocs/op
+BenchmarkDay02Part2-16    	     418	   2856075 ns/op	 1210820 B/op	   60512 allocs/op
+PASS
+ok  	gitlab.com/jhinrichsen/adventofcode2018	28.368s
