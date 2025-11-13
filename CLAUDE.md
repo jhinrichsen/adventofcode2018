@@ -353,6 +353,8 @@ perf(day21): reduce allocations in VM loop
 ❌ Add solution for day 13 part 1 (42)
 ```
 
+**IMPORTANT: Before committing, ALWAYS run `go fmt ./...` to ensure all code is properly formatted.**
+
 ---
 
 ## Common Pitfalls to Avoid
