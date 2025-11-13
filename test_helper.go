@@ -82,3 +82,34 @@ func benchWithParserLines[P any, R comparable](
 		_ = solver(puzzle, part1)
 	}
 }
+
+// testWithSolverBytes is a generic test helper for solvers that take []byte directly (no parser).
+func testWithSolverBytes[R comparable](
+	t *testing.T,
+	day uint8,
+	part1 bool,
+	solver func([]byte, bool) R,
+	want R,
+) {
+	t.Helper()
+	data := file(t, day)
+	got := solver(data, part1)
+	if want != got {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+}
+
+// benchWithSolverBytes is a generic benchmark helper for solvers that take []byte directly (no parser).
+// I/O is not measured, only solving is measured.
+func benchWithSolverBytes[R comparable](
+	b *testing.B,
+	day uint8,
+	part1 bool,
+	solver func([]byte, bool) R,
+) {
+	b.Helper()
+	data := file(b, day)
+	for b.Loop() {
+		_ = solver(data, part1)
+	}
+}

@@ -1,20 +1,34 @@
 package adventofcode2018
 
-import "strconv"
+func Day01(data []byte, part1 bool) uint {
+	frequencies := make([]int, 0, 1024)
 
-func NewDay01(lines []string) ([]int, error) {
-	frequencies := make([]int, 0, len(lines))
-	for _, line := range lines {
-		n, err := strconv.Atoi(line)
-		if err != nil {
-			return nil, err
+	i := 0
+	for i < len(data) {
+		negative := false
+		if data[i] == '+' {
+			i++
+		} else if data[i] == '-' {
+			negative = true
+			i++
 		}
-		frequencies = append(frequencies, n)
-	}
-	return frequencies, nil
-}
 
-func Day01(frequencies []int, part1 bool) uint {
+		num := 0
+		for i < len(data) && data[i] >= '0' && data[i] <= '9' {
+			num = num*10 + int(data[i]-'0')
+			i++
+		}
+
+		if negative {
+			num = -num
+		}
+		frequencies = append(frequencies, num)
+
+		if i < len(data) && data[i] == '\n' {
+			i++
+		}
+	}
+
 	if part1 {
 		sum := 0
 		for _, n := range frequencies {
@@ -26,16 +40,16 @@ func Day01(frequencies []int, part1 bool) uint {
 	seen := make(map[int]bool)
 	frequency := 0
 	seen[0] = true
-	i := 0
+	idx := 0
 	for {
-		frequency += frequencies[i]
+		frequency += frequencies[idx]
 		if seen[frequency] {
 			return uint(frequency)
 		}
 		seen[frequency] = true
-		i++
-		if i == len(frequencies) {
-			i = 0
+		idx++
+		if idx == len(frequencies) {
+			idx = 0
 		}
 	}
 }
