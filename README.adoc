@@ -434,8 +434,6 @@ The massive speedup comes from eliminating map operations in the hot path. By pr
 
 Run with `go test -run=^$ -bench=Day..Part.$ -benchmem`
 
-Total: 1570682771.00 ns, 1570682.771 µs, 1570.683 ms, 1.571s
-
 ----
 goos: linux
 goarch: amd64
@@ -492,6 +490,8 @@ BenchmarkDay25Part1-16    	     313	   3892091 ns/op	  251649 B/op	      48 allo
 PASS
 ok  	gitlab.com/jhinrichsen/adventofcode2018	60.239s
 ----
+
+Total: 1570682771.00 ns, 1570682.771 µs, 1570.683 ms, 1.571s
 
 == References
 
