@@ -366,10 +366,117 @@ geomean                 2.000        1.000       -50.00%
 This final optimization eliminates the string conversion overhead and follows the project guideline of using `uint` for numeric answers.
 
 == Day 15: Beverage Bandits
+
+=== Performance Optimization
+
+Day 15 was optimized by replacing map-based lookups with array-based tracking and eliminating repeated linear searches.
+
+==== Baseline (b0)
+Initial implementation used map-based `visited` tracking in BFS, performed O(n) linear searches through all units to check occupancy on every move, and used slice allocations for tracking adjacent enemies. With hundreds of unit turns per simulation and Part 2 running multiple simulations, this resulted in 408k allocations.
+
+==== Optimization (b1)
+Complete rewrite with multiple optimizations:
+
+- Replaced map-based `visited` tracking with reusable 2D boolean array
+- Added occupancy grid (`[][]bool`) updated incrementally instead of O(n) searches
+- Optimized `adjacentEnemyIdx` to find best attack target in single pass
+- Changed return type from `string` to `uint` per CLAUDE.md guidelines
+- Passed `visited` and `occupied` arrays as parameters to avoid allocations
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day15_bench_b0.txt │       day15_bench_b1.txt       │
+              │       sec/op       │   sec/op     vs base                │
+Day15Part1-16              43.812m ± 3%   7.746m ± 1%  -82.32% (p=0.000 n=10)
+Day15Part2-16              401.45m ± 1%   82.03m ± 1%  -79.57% (p=0.000 n=10)
+geomean                     132.6m        25.21m       -80.99%
+
+              │ day15_bench_b0.txt │       day15_bench_b1.txt        │
+              │        B/op        │     B/op      vs base                │
+Day15Part1-16            16666.2Ki ± 0%   995.9Ki ± 0%  -94.02% (p=0.000 n=10)
+Day15Part2-16            155.913Mi ± 0%   9.814Mi ± 0%  -93.71% (p=0.000 n=10)
+geomean                    50.37Mi        3.089Mi       -93.87%
+
+              │ day15_bench_b0.txt │       day15_bench_b1.txt       │
+              │      allocs/op     │  allocs/op   vs base                │
+Day15Part1-16              40.692k ± 0%   7.155k ± 0%  -82.42% (p=0.000 n=10)
+Day15Part2-16              408.71k ± 0%   75.92k ± 0%  -81.42% (p=0.000 n=10)
+geomean                     129.0k        23.31k       -81.93%
+----
+
+**Key Improvements:**
+
+* **Part 1**: 82.32% faster (43.8ms → 7.7ms)
+* **Part 1**: 94.02% reduction in memory (16.3MB → 996KB)
+* **Part 1**: 82.42% reduction in allocations (40,692 → 7,155)
+* **Part 2**: 79.57% faster (401ms → 82ms)
+* **Part 2**: 93.71% reduction in memory (156MB → 9.8MB)
+* **Part 2**: 81.42% reduction in allocations (408k → 76k)
+
+The dramatic improvement came from eliminating the hot-path map allocations in BFS and replacing O(n) unit searches with O(1) grid lookups. The occupancy grid is updated incrementally as units move and die, avoiding repeated linear scans. This optimization saves ~320ms from the total benchmark runtime.
+
 == Day 16: Chronal Classification
 == Day 17: Reservoir Research
 == Day 18: Settlers of The North Pole
 == Day 19: Go With The Flow
+
+=== Performance Optimization
+
+Day 19 was optimized by eliminating map-based opcode dispatch and reducing string allocations during parsing.
+
+==== Baseline (b0)
+Initial implementation parsed opcodes as strings and used a `map[string]func([6]int, int, int, int) [6]int` for opcode dispatch. Each instruction execution required a map lookup and a function call with array copy semantics. With Part 1 executing 11M+ instructions, the map lookups and string comparisons created significant overhead.
+
+==== Optimization (b1)
+Complete rewrite with opcode compilation:
+
+- Converted opcode strings to integer IDs (`uint8`) during parsing
+- Replaced map-based dispatch with switch statement on opcode ID
+- Inlined opcode execution logic directly in `executeOpcode` function
+- Changed register operations to use pointer to avoid array copying
+- Eliminated all string allocations by parsing byte-by-byte
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day19_bench_b0.txt │       day19_bench_b1.txt       │
+              │       sec/op       │   sec/op     vs base                │
+Day19Part1-16              231.96m ± 2%   42.02m ± 1%  -81.89% (p=0.000 n=10)
+Day19Part2-16               14.59µ ± 2%   11.85µ ± 4%  -18.79% (p=0.000 n=10)
+geomean                     1.839m        705.5µ       -61.64%
+
+              │ day19_bench_b0.txt │       day19_bench_b1.txt        │
+              │        B/op        │     B/op      vs base                │
+Day19Part1-16              6.711Ki ± 0%   3.969Ki ± 0%  -40.86% (p=0.000 n=10)
+Day19Part2-16              6.711Ki ± 0%   3.969Ki ± 0%  -40.86% (p=0.000 n=10)
+geomean                    6.711Ki        3.969Ki       -40.86%
+
+              │ day19_bench_b0.txt │      day19_bench_b1.txt       │
+              │      allocs/op     │ allocs/op   vs base                │
+Day19Part1-16               46.000 ± 0%   7.000 ± 0%  -84.78% (p=0.000 n=10)
+Day19Part2-16               46.000 ± 0%   7.000 ± 0%  -84.78% (p=0.000 n=10)
+geomean                      46.00        7.000       -84.78%
+----
+
+**Key Improvements:**
+
+* **Part 1**: 81.89% faster (232ms → 42ms)
+* **Part 1**: 40.86% reduction in memory (6.7KB → 4.0KB)
+* **Part 1**: 84.78% reduction in allocations (46 → 7)
+* **Part 2**: 18.79% faster (14.6µs → 11.9µs)
+* **Both parts**: 40.86% reduction in memory, 84.78% reduction in allocations
+
+The massive speedup comes from eliminating map lookups in the instruction execution hot loop. By converting opcodes to integer IDs during parsing and using a switch statement, the Go compiler can optimize the dispatch with a jump table. The switch statement combined with pointer-based register updates eliminates both the map lookup overhead and array copying overhead. This optimization saves ~190ms from the total benchmark runtime.
+
 == Day 20: A Regular Map
 == Day 21: Chronal Conversion
 == Day 22: Mode Maze
@@ -467,16 +574,16 @@ BenchmarkDay13Part1-16    	    4459	    276321 ns/op	   77081 B/op	     671 allo
 BenchmarkDay13Part2-16    	     142	   8242921 ns/op	 3828976 B/op	   94351 allocs/op
 BenchmarkDay14Part1-16    	     424	   2792827 ns/op	  294912 B/op	       1 allocs/op
 BenchmarkDay14Part2-16    	       5	 219967526 ns/op	25001984 B/op	       1 allocs/op
-BenchmarkDay15Part1-16    	      24	  42626344 ns/op	17066126 B/op	   40692 allocs/op
-BenchmarkDay15Part2-16    	       3	 405310484 ns/op	163486970 B/op	  408706 allocs/op
+BenchmarkDay15Part1-16    	     151	   7882202 ns/op	 1019769 B/op	    7155 allocs/op
+BenchmarkDay15Part2-16    	      14	  82625262 ns/op	10291165 B/op	   75921 allocs/op
 BenchmarkDay16Part1-16    	    1225	    984709 ns/op	  517904 B/op	    3333 allocs/op
 BenchmarkDay16Part2-16    	     874	   1336860 ns/op	  548104 B/op	    3462 allocs/op
 BenchmarkDay17Part1-16    	      73	  16520990 ns/op	 5241479 B/op	     421 allocs/op
 BenchmarkDay17Part2-16    	      73	  15741445 ns/op	 5241473 B/op	     421 allocs/op
 BenchmarkDay18Part1-16    	    1638	    740788 ns/op	   32256 B/op	      12 allocs/op
 BenchmarkDay18Part2-16    	      38	  30780724 ns/op	 2577151 B/op	     960 allocs/op
-BenchmarkDay19Part1-16    	       5	 226920155 ns/op	    6872 B/op	      46 allocs/op
-BenchmarkDay19Part2-16    	   82906	     14373 ns/op	    6872 B/op	      46 allocs/op
+BenchmarkDay19Part1-16    	      28	  41983231 ns/op	    4064 B/op	       7 allocs/op
+BenchmarkDay19Part2-16    	   97034	     12316 ns/op	    4064 B/op	       7 allocs/op
 BenchmarkDay20Part1-16    	      21	  61985983 ns/op	111571016 B/op	   64799 allocs/op
 BenchmarkDay20Part2-16    	      18	  62625383 ns/op	111569716 B/op	   64797 allocs/op
 BenchmarkDay21Part1-16    	  455888	      2385 ns/op	    2844 B/op	      37 allocs/op
@@ -491,7 +598,7 @@ PASS
 ok  	gitlab.com/jhinrichsen/adventofcode2018	60.239s
 ----
 
-Total: 1570682771.00 ns, 1570682.771 µs, 1570.683 ms, 1.571s
+Total: 1028314426.00 ns, 1028314.426 µs, 1028.314 ms, 1.028s
 
 == References
 
