@@ -177,6 +177,57 @@ The dramatic improvement came from eliminating the per-cell allocations in the d
 == Day 07: The Sum of Its Parts
 == Day 08: Memory Maneuver
 == Day 09: Marble Mania
+
+=== Performance Optimization
+
+Day 09 was optimized by eliminating millions of pointer allocations in the circular linked list implementation.
+
+==== Baseline (b0)
+Initial implementation used pointers (`*marble`) for the circular doubly-linked list, allocating a new marble struct for each game turn. With Part 2 playing 6.8M turns, this resulted in 6.8M allocations and significant GC pressure.
+
+==== Optimization (b1)
+Changed from pointer-based to index-based circular linked list:
+
+- Pre-allocate a single `[]marble` array for all marbles
+- Use `uint` indices instead of `*marble` pointers
+- Store prev/next as array indices rather than memory addresses
+- Eliminates per-turn allocations entirely
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day09_bench_b0.txt │         day09_bench_b1.txt          │
+              │       sec/op       │   sec/op     vs base                │
+Day09Part1-16          2.355m ± 3%   1.039m ± 4%  -55.88% (p=0.000 n=10)
+Day09Part2-16         338.70m ± 8%   52.30m ± 1%  -84.56% (p=0.000 n=10)
+geomean                28.24m        7.372m       -73.90%
+
+              │ day09_bench_b0.txt │         day09_bench_b1.txt          │
+              │        B/op        │     B/op      vs base               │
+Day09Part1-16         1.563Mi ± 0%   1.637Mi ± 0%  +4.70% (p=0.000 n=10)
+Day09Part2-16         155.9Mi ± 0%   163.0Mi ± 0%  +4.55% (p=0.000 n=10)
+geomean               15.61Mi        16.33Mi       +4.63%
+
+              │ day09_bench_b0.txt │         day09_bench_b1.txt          │
+              │     allocs/op      │ allocs/op   vs base                 │
+Day09Part1-16       68129.000 ± 0%   2.000 ± 0%  -100.00% (p=0.000 n=10)
+Day09Part2-16     6812637.000 ± 0%   2.000 ± 0%  -100.00% (p=0.000 n=10)
+geomean                681.3k        2.000       -100.00%
+----
+
+**Key Improvements:**
+
+* **Part 1**: 55.88% faster (2.4ms → 1.0ms)
+* **Part 2**: 84.56% faster (339ms → 52ms)
+* **Both parts**: 100% reduction in allocations (68k/6.8M → 2 each)
+* **Memory**: Slight increase (4.6%) due to pre-allocation, but worthwhile trade-off
+
+The dramatic speedup comes from eliminating GC pressure. By pre-allocating the entire marble array upfront and using indices instead of pointers, we reduce allocations from millions to just 2 (the scores slice and marble array). This optimization saves ~286ms from the total benchmark runtime.
+
 == Day 10: The Stars Align
 == Day 11: Chronal Charge
 
