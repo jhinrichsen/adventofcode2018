@@ -115,14 +115,16 @@ func TestDay02Part2(t *testing.T) {
 
 func BenchmarkDay02Part1(b *testing.B) {
 	lines := linesFromFilename(b, filename(2))
-	for b.Loop() {
+	b.ResetTimer()
+	for range b.N {
 		_ = day2(lines)
 	}
 }
 
 func BenchmarkDay02Part2(b *testing.B) {
 	lines := linesFromFilename(b, filename(2))
-	for b.Loop() {
+	b.ResetTimer()
+	for range b.N {
 		_ = day2Part2(lines)
 	}
 }

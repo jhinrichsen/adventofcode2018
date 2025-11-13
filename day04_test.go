@@ -120,7 +120,7 @@ func BenchmarkDay04Part1(b *testing.B) {
 	events := linesFromFilename(b, filename(4))
 	sort.Strings(events)
 	b.ResetTimer()
-	for b.Loop() {
+	for range b.N {
 		_ = day4(events)
 	}
 }
@@ -129,7 +129,7 @@ func BenchmarkDay04Part2(b *testing.B) {
 	events := linesFromFilename(b, filename(4))
 	sort.Strings(events)
 	b.ResetTimer()
-	for b.Loop() {
+	for range b.N {
 		_ = day4Part2(events)
 	}
 }
