@@ -18,13 +18,13 @@ func NewDay01(lines []string) (Day01Puzzle, error) {
 	return Day01Puzzle{frequencies: frequencies}, nil
 }
 
-func Day01(puzzle Day01Puzzle, part1 bool) int {
+func Day01(puzzle Day01Puzzle, part1 bool) uint {
 	if part1 {
 		sum := 0
 		for _, n := range puzzle.frequencies {
 			sum += n
 		}
-		return sum
+		return uint(sum)
 	}
 
 	seen := make(map[int]bool)
@@ -34,7 +34,7 @@ func Day01(puzzle Day01Puzzle, part1 bool) int {
 	for {
 		frequency += puzzle.frequencies[i]
 		if seen[frequency] {
-			return frequency
+			return uint(frequency)
 		}
 		seen[frequency] = true
 		i++
