@@ -200,6 +200,41 @@ After debugging with a standalone program, verified the algorithm produces corre
 == Day 24: Immune System Simulator 20XX
 == Day 25: Four-Dimensional Adventure
 
+== Performance Optimization Summary
+
+This section tracks all performance optimizations applied to individual days.
+
+=== Optimized Days
+
+**Day 01: Chronal Calibration**
+
+* Status: ✅ Optimized (b0 → b1)
+* Improvement: 39% faster, zero allocations for Part 1
+* Details: See Day 01 section above
+
+**Day 06: Chronal Coordinates**
+
+* Status: ✅ Optimized (b0 → b1)
+* Improvement: 62% faster, 98% less memory, 255,868 → 4 allocations for Part 1
+* Details: See Day 06 section above
+
+=== Remaining Optimization Targets
+
+Based on benchmark analysis, the following days have high optimization potential:
+
+**High Priority:**
+
+* **Day 09 Part2**: 450ms, 163MB, 6.8M allocs - Data structure optimization needed
+* **Day 02 Part2**: 2.9ms, 1.2MB, 60k allocs - Byte-level string comparison
+* **Day 15 Part2**: 423ms, 163MB, 408k allocs - Buffer reuse in pathfinding
+* **Day 03 Part1**: 4.8ms, 8.5MB, 6.6k allocs - Inline parsing
+
+**Medium Priority:**
+
+* Day 20 Part1/Part2: 75ms, 111MB, 64k allocs
+* Day 13 Part2: 8.5ms, 3.8MB, 94k allocs
+* Day 12 Part1: 508µs, 67KB, 8.3k allocs
+
 == Benchmarks
 
 Run with `go test -run=^$ -bench=Day..Part.$ -benchmem`
