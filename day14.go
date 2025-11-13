@@ -30,16 +30,16 @@ func NewDay14(data []byte) (Day14Puzzle, error) {
 }
 
 // Day14 generates chocolate recipe scores.
-// Part 1: Returns the 10 scores after the given number of recipes.
+// Part 1: Returns the 10 scores after the given number of recipes (as a number).
 // Part 2: Returns the number of recipes before the input sequence appears.
-func Day14(puzzle Day14Puzzle, part1 bool) string {
+func Day14(puzzle Day14Puzzle, part1 bool) uint {
 	if part1 {
 		return day14Part1(puzzle.recipes)
 	}
 	return day14Part2(puzzle.recipes)
 }
 
-func day14Part1(recipes int) string {
+func day14Part1(recipes int) uint {
 	// Pre-allocate with reasonable capacity
 	scores := make([]byte, 2, recipes+20)
 	scores[0] = 3
@@ -64,20 +64,20 @@ func day14Part1(recipes int) string {
 		elf2 = (elf2 + 1 + int(scores[elf2])) % len(scores)
 	}
 
-	// Build result string from 10 scores after recipes
-	result := make([]byte, 10)
+	// Build result as uint from 10 scores after recipes
+	var result uint
 	for i := 0; i < 10; i++ {
-		result[i] = scores[recipes+i] + '0'
+		result = result*10 + uint(scores[recipes+i])
 	}
-	return string(result)
+	return result
 }
 
-func day14Part2(recipes int) string {
+func day14Part2(recipes int) uint {
 	// Convert input number to byte digits
 	target := make([]byte, 0, 8)
 	n := recipes
 	if n == 0 {
-		target = []byte{'0'}
+		target = []byte{0}
 	} else {
 		for n > 0 {
 			target = append(target, byte(n%10))
@@ -118,7 +118,7 @@ func day14Part2(recipes int) string {
 						}
 					}
 					if match {
-						return itoa(pos)
+						return uint(pos)
 					}
 				}
 				// Check if match at position len(scores)-targetLen (for the second digit added)
@@ -131,7 +131,7 @@ func day14Part2(recipes int) string {
 					}
 				}
 				if match {
-					return itoa(pos)
+					return uint(pos)
 				}
 			}
 		} else {
@@ -147,7 +147,7 @@ func day14Part2(recipes int) string {
 					}
 				}
 				if match {
-					return itoa(pos)
+					return uint(pos)
 				}
 			}
 		}
@@ -156,24 +156,4 @@ func day14Part2(recipes int) string {
 		elf1 = (elf1 + 1 + int(scores[elf1])) % len(scores)
 		elf2 = (elf2 + 1 + int(scores[elf2])) % len(scores)
 	}
-}
-
-// itoa converts int to string without allocations
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-
-	buf := make([]byte, 0, 10)
-	for n > 0 {
-		buf = append(buf, byte(n%10)+'0')
-		n /= 10
-	}
-
-	// Reverse
-	for i := 0; i < len(buf)/2; i++ {
-		buf[i], buf[len(buf)-1-i] = buf[len(buf)-1-i], buf[i]
-	}
-
-	return string(buf)
 }
