@@ -329,6 +329,117 @@ func BenchmarkDayNNPart1(b *testing.B) {
 - Run `go test -bench . -benchmem` to check allocations
 - Target: Low B/op (bytes/op) and minimal allocs/op
 
+### Stepwise Optimization Workflow
+
+When optimizing performance, follow this systematic approach:
+
+#### 1. Establish Baseline (b0)
+
+Run benchmarks multiple times for statistical significance:
+
+```bash
+go test -run='^$' -bench='DayXXPart.$' -benchmem -count=10 > dayXX_bench_b0.txt
+```
+
+- Use `count=10` for reliable statistics
+- Save to `dayXX_bench_b0.txt`
+- Commit the baseline file to track history
+
+#### 2. Make Targeted Optimization
+
+Apply ONE specific optimization per iteration:
+- Remove separate parser (inline parsing)
+- Reduce allocations (pre-allocate slices)
+- Change data structures (arrays vs maps)
+- Optimize hot loops
+- Remove unnecessary conversions
+
+**One change at a time ensures clear attribution of improvements.**
+
+#### 3. Run New Benchmark (b1, b2, ...)
+
+```bash
+go test -run='^$' -bench='DayXXPart.$' -benchmem -count=10 > dayXX_bench_b1.txt
+```
+
+Number sequentially: b1, b2, b3... for each optimization iteration.
+
+#### 4. Compare with benchstat
+
+Install benchstat if needed:
+```bash
+go install golang.org/x/perf/cmd/benchstat@latest
+```
+
+Compare baseline with new results:
+```bash
+benchstat dayXX_bench_b0.txt dayXX_bench_b1.txt
+```
+
+Output shows:
+- Speed improvements (% faster/slower)
+- Memory reduction (B/op)
+- Allocation reduction (allocs/op)
+- Statistical significance (p-value)
+
+#### 5. Document in README.adoc
+
+Add a Performance Optimization section under the day's heading:
+
+```asciidoc
+=== Performance Optimization
+
+Day XX was optimized by [describe optimization approach].
+
+==== Baseline (b0)
+[Describe initial implementation]
+
+==== Optimization (b1)
+[Describe what changed]
+
+==== Results
+
+----
+[paste benchstat output]
+----
+
+**Key Improvements:**
+
+* **Part 1**: X% faster (Aµs → Bµs)
+* **Part 1**: Y% reduction in allocations
+* **Part 2**: [similar format]
+
+[Explain why the optimization worked]
+```
+
+#### 6. Commit Changes
+
+Use `perf` or `refactor` type:
+```bash
+git add dayXX.go dayXX_test.go dayXX_bench_b1.txt
+git commit -m "perf(dayXX): [describe optimization without revealing solutions]"
+git push
+```
+
+#### 7. Iterate if Needed
+
+Continue with b2, b3... for additional optimizations:
+- Each builds on previous improvements
+- Each has clear before/after comparison
+- Stop when performance targets are met (<1s runtime)
+
+### Example Optimization Sequence
+
+Day 01 progression:
+- **b0**: Separate parser with `strconv.Atoi()` → 8.7µs, 1 alloc, 8KB
+- **b1**: Inline byte parsing → 5.3µs, 0 allocs, 0B (39% faster)
+
+This systematic approach provides:
+- Clear performance history
+- Measurable improvements
+- Statistical confidence
+- Documentation for future reference
+
 ---
 
 ## Git Commit Guidelines
