@@ -124,6 +124,38 @@ The optimization is particularly effective for Part 1, achieving zero allocation
 == Day 03: No Matter How You Slice It
 == Day 04: Repose Record
 == Day 05: Alchemical Reduction
+
+=== Performance Optimization
+
+Day 05 was optimized by choosing the reslicing approach over the hole-marking approach for polymer reactions.
+
+==== Baseline (b0)
+Initial implementation had two competing algorithms: `reactByCreatingHoles` marked reacted units with '.' and removed them in a second pass (1 allocation, 56KB), while `reactByReslicing` used slice reslicing to remove reacted units immediately (0 allocations).
+
+==== Optimization (b1)
+Selected the faster reslicing approach as the single implementation:
+
+- Use `append(polymer[0:i], polymer[i+2:]...)` to remove reacted pairs in-place
+- Backtrack by 2 positions after each reaction to check newly adjacent units
+- Zero allocations by reusing the input slice
+
+==== Results
+
+----
+Comparing reactByCreatingHoles (b0) vs reactByReslicing (b1):
+- reactByCreatingHoles: 295.4µs, 56KB, 1 alloc
+- reactByReslicing: 59.96µs, 0B, 0 allocs
+
+Improvement: 79.7% faster, zero allocations
+----
+
+**Key Improvements:**
+
+* **Part 1**: 79.7% faster (295µs → 60µs)
+* **Part 1**: Zero allocations (was 1 allocation, 56KB)
+
+The reslicing approach is faster because it avoids the two-pass overhead (mark holes, then compact). By modifying the slice in-place and backtracking, we eliminate allocations entirely. The hole-marking implementation has been removed.
+
 == Day 06: Chronal Coordinates
 
 === Performance Optimization
