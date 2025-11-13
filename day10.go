@@ -84,6 +84,7 @@ func Day10(puzzle Day10Puzzle, part1 bool) string {
 
 	minArea := int64(1<<63 - 1) // max int64
 	minTime := uint(0)
+	var savedPoints []point // Save points at minimum area
 
 	// Simulate for a reasonable number of steps
 	// The message appears when points are closest together
@@ -114,6 +115,11 @@ func Day10(puzzle Day10Puzzle, part1 bool) string {
 		if area < minArea {
 			minArea = area
 			minTime = t
+			// Save a snapshot of points at this time
+			if savedPoints == nil {
+				savedPoints = make([]point, len(points))
+			}
+			copy(savedPoints, points)
 		}
 
 		// Move all points
@@ -123,14 +129,13 @@ func Day10(puzzle Day10Puzzle, part1 bool) string {
 		}
 	}
 
-	// Reset points and advance to the optimal time
-	copy(points, puzzle.points)
-	for range minTime {
-		for i := range len(points) {
-			points[i].x += points[i].vx
-			points[i].y += points[i].vy
-		}
+	// Part 2: Return the time
+	if !part1 {
+		return fmt.Sprintf("%d", minTime)
 	}
+
+	// Part 1: Use saved points to render and OCR
+	points = savedPoints
 
 	// Calculate final bounding box
 	minX, maxX := points[0].x, points[0].x
@@ -155,30 +160,31 @@ func Day10(puzzle Day10Puzzle, part1 bool) string {
 	width := maxX - minX + 1
 	height := maxY - minY + 1
 
-	pointSet := make(map[[2]int]bool)
-	for i := range len(points) {
-		pointSet[[2]int{points[i].x - minX, points[i].y - minY}] = true
-	}
-
-	var grid strings.Builder
+	// Use 2D array instead of map for better performance
+	grid := make([][]byte, height)
 	for y := range height {
+		grid[y] = make([]byte, width)
 		for x := range width {
-			if pointSet[[2]int{x, y}] {
-				grid.WriteByte('#')
-			} else {
-				grid.WriteByte('.')
-			}
+			grid[y][x] = '.'
 		}
-		grid.WriteByte('\n')
 	}
 
-	// Part 2: Return the time
-	if !part1 {
-		return fmt.Sprintf("%d", minTime)
+	for i := range len(points) {
+		x := points[i].x - minX
+		y := points[i].y - minY
+		grid[y][x] = '#'
+	}
+
+	// Build string for OCR
+	var sb strings.Builder
+	sb.Grow(height * (width + 1))
+	for y := range height {
+		sb.Write(grid[y])
+		sb.WriteByte('\n')
 	}
 
 	// Part 1: Use aococr to parse the message
 	charSet := map[rune]bool{'#': true}
-	message, _ := aococr.ParseLetters(grid.String(), charSet)
+	message, _ := aococr.ParseLetters(sb.String(), charSet)
 	return message
 }

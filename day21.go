@@ -3,7 +3,12 @@ package adventofcode2018
 // Day21Puzzle represents the device program.
 type Day21Puzzle struct {
 	ipReg        int
-	instructions []instruction
+	instructions []instruction21
+}
+
+type instruction21 struct {
+	opcode  string
+	a, b, c int
 }
 
 // NewDay21 parses the program (same format as day 19).
@@ -12,7 +17,7 @@ func NewDay21(data []byte) (Day21Puzzle, error) {
 	i := 0
 
 	var ipReg int
-	var instructions []instruction
+	var instructions []instruction21
 
 	// Parse #ip line
 	if i+4 <= n && string(data[i:i+4]) == "#ip " {
@@ -72,7 +77,7 @@ func NewDay21(data []byte) (Day21Puzzle, error) {
 			i++
 		}
 
-		instructions = append(instructions, instruction{opcode: opcode, a: a, b: b, c: c})
+		instructions = append(instructions, instruction21{opcode: opcode, a: a, b: b, c: c})
 
 		// Skip newline
 		for i < n && (data[i] == '\n' || data[i] == '\r') {
