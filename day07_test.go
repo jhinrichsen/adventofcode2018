@@ -48,3 +48,19 @@ func TestDay07Part2(t *testing.T) {
 		t.Fatalf("want %d but got %d", want, got)
 	}
 }
+
+func BenchmarkDay07Part1(b *testing.B) {
+	lines := linesFromFilename(b, filename(7))
+	b.ResetTimer()
+	for range b.N {
+		_, _ = Day07(lines)
+	}
+}
+
+func BenchmarkDay07Part2(b *testing.B) {
+	lines := linesFromFilename(b, filename(7))
+	b.ResetTimer()
+	for range b.N {
+		_, _ = Day07Part2(lines, 5, 60)
+	}
+}

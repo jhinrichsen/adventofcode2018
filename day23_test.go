@@ -21,3 +21,7 @@ func TestDay23Part2(t *testing.T) {
 func BenchmarkDay23Part1(b *testing.B) {
 	benchWithParserBytes(b, 23, true, NewDay23, Day23)
 }
+
+func BenchmarkDay23Part2(b *testing.B) {
+	benchWithParserBytes(b, 23, false, NewDay23, Day23)
+}

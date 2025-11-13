@@ -116,16 +116,21 @@ func TestDay04Part1(t *testing.T) {
 	}
 }
 
-func BenchmarkDay04(b *testing.B) {
-	const want = 85296
+func BenchmarkDay04Part1(b *testing.B) {
 	events := linesFromFilename(b, filename(4))
 	sort.Strings(events)
 	b.ResetTimer()
-	for b.Loop() {
-		got := day4(events)
-		if want != got {
-			b.Fatalf("want %d but got %d\n", want, got)
-		}
+	for range b.N {
+		_ = day4(events)
+	}
+}
+
+func BenchmarkDay04Part2(b *testing.B) {
+	events := linesFromFilename(b, filename(4))
+	sort.Strings(events)
+	b.ResetTimer()
+	for range b.N {
+		_ = day4Part2(events)
 	}
 }
 

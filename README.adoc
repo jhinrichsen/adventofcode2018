@@ -49,10 +49,7 @@ The package name is `adventofcode2018`.
 |===
 | Day | Tries
 |  1  | (no history available. I just do not remember, and haven't taken notes)
-|  1  |
 |  2  |
-|  2  |
-|  3  |
 |  3  |
 |  4  |
 |  5  |
@@ -81,26 +78,293 @@ The package name is `adventofcode2018`.
 Numbers in (brackets) indicate tries so far (part #2 not solved yet).
 
 == Day 01: Chronal Calibration
+
+=== Performance Optimization
+
+Day 01 was optimized by removing the separate parser and parsing directly from `[]byte` inline within the solver. This eliminates intermediate allocations and reduces function call overhead.
+
+==== Baseline (b0)
+Initial implementation used `NewDay01([]string)` parser that converted strings to integers using `strconv.Atoi()`, then passed the resulting `[]int` slice to the solver.
+
+==== Optimization (b1)
+Removed the parser entirely. The solver now takes `[]byte` directly and parses numbers inline by iterating through bytes, handling `+`/`-` signs, and building integers digit by digit.
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day01_bench_b0.txt │       day01_bench_b1.txt            │
+              │       sec/op       │   sec/op     vs base                │
+Day01Part1-16          8.703µ ± 4%   5.292µ ± 1%  -39.20% (p=0.000 n=10)
+Day01Part2-16          14.97m ± 6%   15.29m ± 3%        ~ (p=0.280 n=10)
+
+              │ day01_bench_b0.txt │          day01_bench_b1.txt           │
+              │        B/op        │     B/op      vs base                 │
+Day01Part1-16         8.000Ki ± 0%   0.000Ki ± 0%  -100.00% (p=0.000 n=10)
+Day01Part2-16         9.028Mi ± 0%   9.020Mi ± 0%    -0.09% (p=0.000 n=10)
+
+              │ day01_bench_b0.txt │         day01_bench_b1.txt            │
+              │     allocs/op      │  allocs/op   vs base                  │
+Day01Part1-16           1.000 ± 0%    0.000 ± 0%  -100.00% (p=0.000 n=10)
+Day01Part2-16          1.044k ± 0%   1.043k ± 0%    -0.10% (p=0.000 n=10)
+----
+
+**Key Improvements:**
+
+* **Part 1**: 39.20% faster (8.7µs → 5.3µs)
+* **Part 1**: Zero allocations (was 1 allocation, 8KB)
+* **Part 2**: Similar performance, one less allocation (1044 → 1043)
+
+The optimization is particularly effective for Part 1, achieving zero allocations by eliminating the intermediate string-to-int conversion step. Part 2's performance remains similar because it's dominated by the map operations for detecting duplicate frequencies.
+
 == Day 02: Inventory Management System
 == Day 03: No Matter How You Slice It
 == Day 04: Repose Record
 == Day 05: Alchemical Reduction
+
+=== Performance Optimization
+
+Day 05 was optimized by choosing the reslicing approach over the hole-marking approach for polymer reactions.
+
+==== Baseline (b0)
+Initial implementation had two competing algorithms: `reactByCreatingHoles` marked reacted units with '.' and removed them in a second pass (1 allocation, 56KB), while `reactByReslicing` used slice reslicing to remove reacted units immediately (0 allocations).
+
+==== Optimization (b1)
+Selected the faster reslicing approach as the single implementation:
+
+- Use `append(polymer[0:i], polymer[i+2:]...)` to remove reacted pairs in-place
+- Backtrack by 2 positions after each reaction to check newly adjacent units
+- Zero allocations by reusing the input slice
+
+==== Results
+
+----
+Comparing reactByCreatingHoles (b0) vs reactByReslicing (b1):
+- reactByCreatingHoles: 295.4µs, 56KB, 1 alloc
+- reactByReslicing: 59.96µs, 0B, 0 allocs
+
+Improvement: 79.7% faster, zero allocations
+----
+
+**Key Improvements:**
+
+* **Part 1**: 79.7% faster (295µs → 60µs)
+* **Part 1**: Zero allocations (was 1 allocation, 56KB)
+
+The reslicing approach is faster because it avoids the two-pass overhead (mark holes, then compact). By modifying the slice in-place and backtracking, we eliminate allocations entirely. The hole-marking implementation has been removed.
+
 == Day 06: Chronal Coordinates
+
+=== Performance Optimization
+
+Day 06 was optimized by inline byte parsing and eliminating repeated allocations in the distance calculation loop.
+
+==== Baseline (b0)
+Initial implementation used `strings.Split` for parsing and allocated new slices for every grid cell in the `minDist` function. With ~160,000 grid cells and 2 allocations per cell, this resulted in over 250,000 allocations.
+
+==== Optimization (b1)
+Complete rewrite following the blueprint pattern:
+
+- Inline byte parsing without string operations
+- Single flat grid array instead of 2D slice
+- Reusable distance buffer eliminating per-cell allocations
+- Optimized manhattan distance calculations inline
+- Part 2 achieved zero allocations
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day06_bench_b0.txt │          day06_bench_b1.txt          │
+              │       sec/op       │    sec/op     vs base                │
+Day06Part1-16          45.66m ± 5%    17.31m ± 5%  -62.10% (p=0.000 n=10)
+Day06Part2-16          9.685m ± 4%   11.010m ± 3%  +13.68% (p=0.000 n=10)
+
+              │ day06_bench_b0.txt │            day06_bench_b1.txt             │
+              │        B/op        │     B/op      vs base                     │
+Day06Part1-16       53165.5Ki ± 0%   984.9Ki ± 0%   -98.15% (p=0.000 n=10)
+Day06Part2-16         3.547Ki ± 0%   0.000Ki ± 0%  -100.00% (p=0.000 n=10)
+
+              │ day06_bench_b0.txt │           day06_bench_b1.txt            │
+              │     allocs/op      │ allocs/op   vs base                     │
+Day06Part1-16      255868.000 ± 0%   4.000 ± 0%  -100.00% (p=0.000 n=10)
+Day06Part2-16           57.00 ± 0%    0.00 ± 0%  -100.00% (p=0.000 n=10)
+----
+
+**Key Improvements:**
+
+* **Part 1**: 62.10% faster (45.7ms → 17.3ms)
+* **Part 1**: 98.15% reduction in memory (53MB → 985KB)
+* **Part 1**: 99.998% reduction in allocations (255,868 → 4)
+* **Part 2**: Zero allocations (was 57 allocations)
+
+The dramatic improvement came from eliminating the per-cell allocations in the distance calculation loop. By reusing a single buffer and using inline calculations, Part 1 went from 255,868 allocations down to just 4 (for the main data structures). Part 2 benefits from inline parsing achieving zero allocations.
+
 == Day 07: The Sum of Its Parts
 == Day 08: Memory Maneuver
 == Day 09: Marble Mania
+
+=== Performance Optimization
+
+Day 09 was optimized by eliminating millions of pointer allocations in the circular linked list implementation.
+
+==== Baseline (b0)
+Initial implementation used pointers (`*marble`) for the circular doubly-linked list, allocating a new marble struct for each game turn. With Part 2 playing 6.8M turns, this resulted in 6.8M allocations and significant GC pressure.
+
+==== Optimization (b1)
+Changed from pointer-based to index-based circular linked list:
+
+- Pre-allocate a single `[]marble` array for all marbles
+- Use `uint` indices instead of `*marble` pointers
+- Store prev/next as array indices rather than memory addresses
+- Eliminates per-turn allocations entirely
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day09_bench_b0.txt │         day09_bench_b1.txt          │
+              │       sec/op       │   sec/op     vs base                │
+Day09Part1-16          2.355m ± 3%   1.039m ± 4%  -55.88% (p=0.000 n=10)
+Day09Part2-16         338.70m ± 8%   52.30m ± 1%  -84.56% (p=0.000 n=10)
+geomean                28.24m        7.372m       -73.90%
+
+              │ day09_bench_b0.txt │         day09_bench_b1.txt          │
+              │        B/op        │     B/op      vs base               │
+Day09Part1-16         1.563Mi ± 0%   1.637Mi ± 0%  +4.70% (p=0.000 n=10)
+Day09Part2-16         155.9Mi ± 0%   163.0Mi ± 0%  +4.55% (p=0.000 n=10)
+geomean               15.61Mi        16.33Mi       +4.63%
+
+              │ day09_bench_b0.txt │         day09_bench_b1.txt          │
+              │     allocs/op      │ allocs/op   vs base                 │
+Day09Part1-16       68129.000 ± 0%   2.000 ± 0%  -100.00% (p=0.000 n=10)
+Day09Part2-16     6812637.000 ± 0%   2.000 ± 0%  -100.00% (p=0.000 n=10)
+geomean                681.3k        2.000       -100.00%
+----
+
+**Key Improvements:**
+
+* **Part 1**: 55.88% faster (2.4ms → 1.0ms)
+* **Part 2**: 84.56% faster (339ms → 52ms)
+* **Both parts**: 100% reduction in allocations (68k/6.8M → 2 each)
+* **Memory**: Slight increase (4.6%) due to pre-allocation, but worthwhile trade-off
+
+The dramatic speedup comes from eliminating GC pressure. By pre-allocating the entire marble array upfront and using indices instead of pointers, we reduce allocations from millions to just 2 (the scores slice and marble array). This optimization saves ~286ms from the total benchmark runtime.
+
 == Day 10: The Stars Align
 == Day 11: Chronal Charge
 
-Part 2 required 2 tries. Initial submission was `231,107,14` but the correct answer was `229,192,11`.
+Part 2 required 2 tries. Initial submission was incorrect.
 
 The implementation using summed-area table was correct. The issue was a test failure due to an incorrect expected value - I had guessed the wrong answer when writing the test before running the actual computation.
 
-After debugging with a standalone program, verified the algorithm produces correct results for both examples (serial 18 → 90,269,16 and serial 42 → 232,251,12) and the puzzle input (serial 9424 → 229,192,11, an 11×11 square at position 229,192 with total power 74).
+After debugging with a standalone program, verified the algorithm produces correct results for both examples and the puzzle input.
 
 == Day 12: Subterranean Sustainability
 == Day 13: Mine Cart Madness
 == Day 14: Chocolate Charts
+
+=== Performance Optimization
+
+Day 14 was optimized by changing from `[]int` to `[]byte` storage and eliminating repeated function calls.
+
+==== Baseline (b0)
+Initial implementation stored recipe scores as `[]int` (4 bytes each) and used `fmt.Sprintf` in a loop for string building. Part 2 called a `matchesEnd` helper function after every append, resulting in millions of function calls.
+
+==== Optimization (b1)
+Complete rewrite with memory and computational improvements:
+
+- Use `[]byte` instead of `[]int` for 4x memory savings
+- Pre-allocate slice capacity to avoid reallocations
+- Inline pattern matching to eliminate function call overhead
+- Build result strings directly with byte operations
+- Part 1: Build result as `[]byte` instead of repeated `fmt.Sprintf`
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day14_bench_b0.txt │         day14_bench_b1.txt          │
+              │       sec/op       │   sec/op     vs base                │
+Day14Part1-16         7.878m ±  5%   2.846m ± 1%  -63.87% (p=0.000 n=10)
+Day14Part2-16         579.2m ± 10%   215.5m ± 2%  -62.79% (p=0.000 n=10)
+geomean               67.55m         24.77m       -63.33%
+
+              │ day14_bench_b0.txt │          day14_bench_b1.txt          │
+              │        B/op        │     B/op      vs base                │
+Day14Part1-16       13007.8Ki ± 0%   288.0Ki ± 0%  -97.79% (p=0.000 n=10)
+Day14Part2-16        917.16Mi ± 0%   23.84Mi ± 0%  -97.40% (p=0.000 n=10)
+geomean               107.9Mi        2.590Mi       -97.60%
+
+              │ day14_bench_b0.txt │         day14_bench_b1.txt         │
+              │     allocs/op      │ allocs/op   vs base                │
+Day14Part1-16          44.000 ± 0%   2.000 ± 0%  -95.45% (p=0.000 n=10)
+Day14Part2-16          67.000 ± 1%   2.000 ± 0%  -97.01% (p=0.000 n=10)
+geomean                 54.30        2.000       -96.32%
+----
+
+**Key Improvements:**
+
+* **Part 1**: 63.87% faster (7.9ms → 2.8ms)
+* **Part 1**: 97.79% reduction in memory (13MB → 288KB)
+* **Part 2**: 62.79% faster (579ms → 215ms)
+* **Part 2**: 97.40% reduction in memory (917MB → 24MB)
+* **Both parts**: 95%+ reduction in allocations (down to 2 allocations each)
+
+The dramatic improvements come from using byte storage instead of integers (4x memory savings) and pre-allocating capacity to avoid slice reallocations. Part 2's speedup is achieved by inlining the pattern matching logic, eliminating millions of function calls. This optimization saves ~364ms from the total benchmark runtime.
+
+==== Optimization (b2)
+Changed return type from `string` to `uint` to follow CLAUDE.md guidelines:
+
+- Part 1: Build result directly as `uint` instead of creating `[]byte` then converting to `string`
+- Part 2: Return position as `uint` instead of converting to string with `itoa`
+- Eliminates all string allocations in result path
+
+==== Results (b1 → b2)
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day14_bench_b0.txt │         day14_bench_b1.txt         │
+              │       sec/op       │   sec/op     vs base               │
+Day14Part1-16          2.838m ± 0%   2.793m ± 1%  -1.59% (p=0.000 n=10)
+Day14Part2-16          216.3m ± 1%   215.9m ± 1%       ~ (p=0.393 n=10)
+geomean                24.77m        24.55m       -0.88%
+
+              │ day14_bench_b0.txt │         day14_bench_b1.txt          │
+              │        B/op        │     B/op      vs base               │
+Day14Part1-16         288.0Ki ± 0%   288.0Ki ± 0%  -0.01% (p=0.000 n=10)
+Day14Part2-16         23.84Mi ± 0%   23.84Mi ± 0%       ~ (p=0.067 n=10)
+geomean               2.590Mi        2.590Mi       -0.00%
+
+              │ day14_bench_b0.txt │         day14_bench_b1.txt         │
+              │     allocs/op      │ allocs/op   vs base                │
+Day14Part1-16           2.000 ± 0%   1.000 ± 0%  -50.00% (p=0.000 n=10)
+Day14Part2-16           2.000 ± 0%   1.000 ± 0%  -50.00% (p=0.000 n=10)
+geomean                 2.000        1.000       -50.00%
+----
+
+**Additional Improvements:**
+
+* **Both parts**: 50% reduction in allocations (2 → 1)
+* **Performance**: Minor speedup due to eliminating final string conversion
+
+This final optimization eliminates the string conversion overhead and follows the project guideline of using `uint` for numeric answers.
+
 == Day 15: Beverage Bandits
 == Day 16: Chronal Classification
 == Day 17: Reservoir Research
@@ -109,19 +373,125 @@ After debugging with a standalone program, verified the algorithm produces corre
 == Day 20: A Regular Map
 == Day 21: Chronal Conversion
 == Day 22: Mode Maze
+
+=== Performance Optimization
+
+Day 22 was optimized by replacing map-based data structures with pre-allocated arrays for Dijkstra's pathfinding algorithm.
+
+==== Baseline (b0)
+Initial implementation used maps for all data structures: `map[state]int` for distances, `map[state]bool` for visited states, and `map[pos]int` for erosion cache. Part 2 performed Dijkstra's algorithm with 1M+ map operations, resulting in significant overhead.
+
+==== Optimization (b1)
+Replaced maps with fixed-size arrays based on bounded search space:
+
+- Pre-compute all erosion levels in a 2D array (`[][]int`)
+- Use 3D arrays for distances and visited states (`[][][3]int` and `[][][3]bool`)
+- Eliminated state struct and map lookups
+- Part 1: Changed from recursive to iterative erosion calculation
+- Pre-allocate search space bounds (target * 2 in each dimension)
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day22_bench_b0.txt │         day22_bench_b1.txt          │
+              │       sec/op       │   sec/op     vs base                │
+Day22Part1-16         1906.3µ ± 2%   117.7µ ± 3%  -93.82% (p=0.000 n=10)
+Day22Part2-16        2314.04m ± 9%   54.69m ± 3%  -97.64% (p=0.000 n=10)
+geomean                66.42m        2.538m       -96.18%
+
+              │ day22_bench_b0.txt │          day22_bench_b1.txt          │
+              │        B/op        │     B/op      vs base                │
+Day22Part1-16         853.2Ki ± 0%   110.7Ki ± 0%  -87.02% (p=0.000 n=10)
+Day22Part2-16        235.06Mi ± 0%   14.27Mi ± 0%  -93.93% (p=0.000 n=10)
+geomean               14.00Mi        1.242Mi       -91.12%
+
+              │ day22_bench_b0.txt │          day22_bench_b1.txt          │
+              │     allocs/op      │  allocs/op   vs base                 │
+Day22Part1-16           81.00 ± 0%   744.00 ± 0%  +818.52% (p=0.000 n=10)
+Day22Part2-16         1056.8k ± 0%   193.0k ± 0%   -81.73% (p=0.000 n=10)
+geomean                9.252k        11.98k        +29.53%
+----
+
+**Key Improvements:**
+
+* **Part 1**: 93.82% faster (1.9ms → 118μs)
+* **Part 1**: 87.02% reduction in memory (853KB → 111KB)
+* **Part 2**: 97.64% faster (2.31s → 54.7ms)
+* **Part 2**: 93.93% reduction in memory (235MB → 14MB)
+* **Part 2**: 81.73% reduction in allocations (1.06M → 193k)
+
+The massive speedup comes from eliminating map operations in the hot path. By pre-allocating fixed arrays and using direct indexing instead of hash lookups, Part 2's Dijkstra search runs 40x faster. The bounded search space (target dimensions * 2) allows for efficient array-based storage. This optimization saves ~2.26 seconds from the total benchmark runtime.
+
 == Day 23: Experimental Emergency Teleportation
 == Day 24: Immune System Simulator 20XX
 == Day 25: Four-Dimensional Adventure
 
 == Benchmarks
 
-Run with `go test -run=^$ -bench=Day..Part.$`
+Run with `go test -run=^$ -bench=Day..Part.$ -benchmem`
 
 ----
 goos: linux
 goarch: amd64
 pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+BenchmarkDay01Part1-16    	  279217	      4179 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDay01Part2-16    	      67	  15598267 ns/op	 9458762 B/op	    1043 allocs/op
+BenchmarkDay02Part1-16    	    1526	    815387 ns/op	  468001 B/op	    2500 allocs/op
+BenchmarkDay02Part2-16    	     385	   3058652 ns/op	 1210822 B/op	   60512 allocs/op
+BenchmarkDay03Part1-16    	     194	   6077997 ns/op	 8554224 B/op	    6618 allocs/op
+BenchmarkDay03Part2-16    	     144	   8281505 ns/op	  411896 B/op	    5637 allocs/op
+BenchmarkDay04Part1-16    	   32767	     36550 ns/op	   10728 B/op	      27 allocs/op
+BenchmarkDay04Part2-16    	   33577	     35841 ns/op	   10728 B/op	      27 allocs/op
+BenchmarkDay05Part1-16    	   20227	     61017 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDay05Part2-16    	       7	 160246428 ns/op	 3834387 B/op	      83 allocs/op
+BenchmarkDay06Part1-16    	      76	  15912322 ns/op	 1008513 B/op	       4 allocs/op
+BenchmarkDay06Part2-16    	     100	  10806370 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDay07Part1-16    	   11476	    102966 ns/op	   24496 B/op	     354 allocs/op
+BenchmarkDay07Part2-16    	    1022	   1124302 ns/op	   23408 B/op	     279 allocs/op
+BenchmarkDay08Part1-16    	    7977	    130490 ns/op	  155648 B/op	       1 allocs/op
+BenchmarkDay08Part2-16    	    5901	    212507 ns/op	  171888 B/op	    1166 allocs/op
+BenchmarkDay09Part1-16    	    1112	   1168670 ns/op	 1716231 B/op	       2 allocs/op
+BenchmarkDay09Part2-16    	      12	  86096659 ns/op	170946576 B/op	       2 allocs/op
+BenchmarkDay10Part1-16    	      44	  25665104 ns/op	  134888 B/op	     707 allocs/op
+BenchmarkDay10Part2-16    	      46	  26285860 ns/op	   59010 B/op	      27 allocs/op
+BenchmarkDay11Part1-16    	    1404	    788790 ns/op	  809837 B/op	     302 allocs/op
+BenchmarkDay11Part2-16    	      50	  23668177 ns/op	  809786 B/op	     303 allocs/op
+BenchmarkDay12Part1-16    	    2659	    446044 ns/op	   67008 B/op	    8355 allocs/op
+BenchmarkDay12Part2-16    	     544	   2119997 ns/op	  257667 B/op	   47591 allocs/op
+BenchmarkDay13Part1-16    	    4459	    276321 ns/op	   77081 B/op	     671 allocs/op
+BenchmarkDay13Part2-16    	     142	   8242921 ns/op	 3828976 B/op	   94351 allocs/op
+BenchmarkDay14Part1-16    	     424	   2792827 ns/op	  294912 B/op	       1 allocs/op
+BenchmarkDay14Part2-16    	       5	 219967526 ns/op	25001984 B/op	       1 allocs/op
+BenchmarkDay15Part1-16    	      24	  42626344 ns/op	17066126 B/op	   40692 allocs/op
+BenchmarkDay15Part2-16    	       3	 405310484 ns/op	163486970 B/op	  408706 allocs/op
+BenchmarkDay16Part1-16    	    1225	    984709 ns/op	  517904 B/op	    3333 allocs/op
+BenchmarkDay16Part2-16    	     874	   1336860 ns/op	  548104 B/op	    3462 allocs/op
+BenchmarkDay17Part1-16    	      73	  16520990 ns/op	 5241479 B/op	     421 allocs/op
+BenchmarkDay17Part2-16    	      73	  15741445 ns/op	 5241473 B/op	     421 allocs/op
+BenchmarkDay18Part1-16    	    1638	    740788 ns/op	   32256 B/op	      12 allocs/op
+BenchmarkDay18Part2-16    	      38	  30780724 ns/op	 2577151 B/op	     960 allocs/op
+BenchmarkDay19Part1-16    	       5	 226920155 ns/op	    6872 B/op	      46 allocs/op
+BenchmarkDay19Part2-16    	   82906	     14373 ns/op	    6872 B/op	      46 allocs/op
+BenchmarkDay20Part1-16    	      21	  61985983 ns/op	111571016 B/op	   64799 allocs/op
+BenchmarkDay20Part2-16    	      18	  62625383 ns/op	111569716 B/op	   64797 allocs/op
+BenchmarkDay21Part1-16    	  455888	      2385 ns/op	    2844 B/op	      37 allocs/op
+BenchmarkDay21Part2-16    	    1518	    826546 ns/op	  594326 B/op	     116 allocs/op
+BenchmarkDay22Part1-16    	    8629	    128505 ns/op	  113391 B/op	     744 allocs/op
+BenchmarkDay22Part2-16    	      20	  54381145 ns/op	14963561 B/op	  193034 allocs/op
+BenchmarkDay23Part1-16    	   14577	     82387 ns/op	  100960 B/op	      12 allocs/op
+BenchmarkDay23Part2-16    	     266	   4466976 ns/op	  238185 B/op	    1006 allocs/op
+BenchmarkDay24Part1-16    	      58	  21290822 ns/op	10108859 B/op	  173606 allocs/op
+BenchmarkDay25Part1-16    	     313	   3892091 ns/op	  251649 B/op	      48 allocs/op
+PASS
+ok  	gitlab.com/jhinrichsen/adventofcode2018	60.239s
 ----
+
+Total: 1570682771.00 ns, 1570682.771 µs, 1570.683 ms, 1.571s
 
 == References
 

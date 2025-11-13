@@ -43,13 +43,6 @@ func NewDay09(data []byte) (Day09Puzzle, error) {
 // Part 1: Play the game as described.
 // Part 2: Last marble is 100 times larger.
 func Day09(puzzle Day09Puzzle, part1 bool) uint {
-	// marble represents a node in the circular doubly-linked list.
-	type marble struct {
-		value uint
-		prev  *marble
-		next  *marble
-	}
-
 	lastMarble := puzzle.lastMarble
 	if !part1 {
 		lastMarble *= 100
@@ -58,10 +51,13 @@ func Day09(puzzle Day09Puzzle, part1 bool) uint {
 	// Initialize scores
 	scores := make([]uint, puzzle.players)
 
-	// Create the initial marble (0) in a circular list
-	current := &marble{value: 0}
-	current.prev = current
-	current.next = current
+	// Pre-allocate marble array
+	marbles := make([]marble, lastMarble+1)
+
+	// Initialize marble 0 in a circular list
+	marbles[0] = marble{value: 0, prev: 0, next: 0}
+	currentIdx := uint(0)
+	nextIdx := uint(1)
 
 	// Simulate the game
 	for marbleNum := uint(1); marbleNum <= lastMarble; marbleNum++ {
@@ -72,27 +68,41 @@ func Day09(puzzle Day09Puzzle, part1 bool) uint {
 
 			// Move 7 positions counter-clockwise
 			for range 7 {
-				current = current.prev
+				currentIdx = marbles[currentIdx].prev
 			}
 
 			// Remove this marble and add to score
-			scores[player] += current.value
-			current.prev.next = current.next
-			current.next.prev = current.prev
-			current = current.next
+			scores[player] += marbles[currentIdx].value
+			prevIdx := marbles[currentIdx].prev
+			nextIdxTemp := marbles[currentIdx].next
+			marbles[prevIdx].next = nextIdxTemp
+			marbles[nextIdxTemp].prev = prevIdx
+			currentIdx = nextIdxTemp
 		} else {
 			// Normal rule: insert between 1 and 2 clockwise
-			current = current.next
-			newMarble := &marble{
+			currentIdx = marbles[currentIdx].next
+
+			newIdx := nextIdx
+			nextIdx++
+
+			marbles[newIdx] = marble{
 				value: marbleNum,
-				prev:  current,
-				next:  current.next,
+				prev:  currentIdx,
+				next:  marbles[currentIdx].next,
 			}
-			current.next.prev = newMarble
-			current.next = newMarble
-			current = newMarble
+
+			marbles[marbles[currentIdx].next].prev = newIdx
+			marbles[currentIdx].next = newIdx
+			currentIdx = newIdx
 		}
 	}
 
 	return slices.Max(scores)
+}
+
+// marble represents a node in the circular doubly-linked list using indices.
+type marble struct {
+	value uint
+	prev  uint
+	next  uint
 }
