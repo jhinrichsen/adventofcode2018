@@ -325,6 +325,46 @@ geomean                 54.30        2.000       -96.32%
 
 The dramatic improvements come from using byte storage instead of integers (4x memory savings) and pre-allocating capacity to avoid slice reallocations. Part 2's speedup is achieved by inlining the pattern matching logic, eliminating millions of function calls. This optimization saves ~364ms from the total benchmark runtime.
 
+==== Optimization (b2)
+Changed return type from `string` to `uint` to follow CLAUDE.md guidelines:
+
+- Part 1: Build result directly as `uint` instead of creating `[]byte` then converting to `string`
+- Part 2: Return position as `uint` instead of converting to string with `itoa`
+- Eliminates all string allocations in result path
+
+==== Results (b1 → b2)
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day14_bench_b0.txt │         day14_bench_b1.txt         │
+              │       sec/op       │   sec/op     vs base               │
+Day14Part1-16          2.838m ± 0%   2.793m ± 1%  -1.59% (p=0.000 n=10)
+Day14Part2-16          216.3m ± 1%   215.9m ± 1%       ~ (p=0.393 n=10)
+geomean                24.77m        24.55m       -0.88%
+
+              │ day14_bench_b0.txt │         day14_bench_b1.txt          │
+              │        B/op        │     B/op      vs base               │
+Day14Part1-16         288.0Ki ± 0%   288.0Ki ± 0%  -0.01% (p=0.000 n=10)
+Day14Part2-16         23.84Mi ± 0%   23.84Mi ± 0%       ~ (p=0.067 n=10)
+geomean               2.590Mi        2.590Mi       -0.00%
+
+              │ day14_bench_b0.txt │         day14_bench_b1.txt         │
+              │     allocs/op      │ allocs/op   vs base                │
+Day14Part1-16           2.000 ± 0%   1.000 ± 0%  -50.00% (p=0.000 n=10)
+Day14Part2-16           2.000 ± 0%   1.000 ± 0%  -50.00% (p=0.000 n=10)
+geomean                 2.000        1.000       -50.00%
+----
+
+**Additional Improvements:**
+
+* **Both parts**: 50% reduction in allocations (2 → 1)
+* **Performance**: Minor speedup due to eliminating final string conversion
+
+This final optimization eliminates the string conversion overhead and follows the project guideline of using `uint` for numeric answers.
+
 == Day 15: Beverage Bandits
 == Day 16: Chronal Classification
 == Day 17: Reservoir Research
