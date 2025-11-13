@@ -220,8 +220,8 @@ BenchmarkDay04Part2-16    	   29155	     38169 ns/op	   10728 B/op	      27 allo
 BenchmarkDay05Part1/reactByReslicing-16         	   13820	     88318 ns/op	       0 B/op	       0 allocs/op
 BenchmarkDay05Part1/reactByCreatingHoles-16     	    5930	    178437 ns/op	   57344 B/op	       1 allocs/op
 BenchmarkDay05Part2-16                          	       7	 160350165 ns/op	 3834360 B/op	      83 allocs/op
-BenchmarkDay06Part1-16                          	      25	  45954050 ns/op	54441386 B/op	  255867 allocs/op
-BenchmarkDay06Part2-16                          	     127	   9412830 ns/op	    3632 B/op	      57 allocs/op
+BenchmarkDay06Part1-16                          	      69	  17363903 ns/op	 1008512 B/op	       4 allocs/op
+BenchmarkDay06Part2-16                          	     100	  11162451 ns/op	       0 B/op	       0 allocs/op
 BenchmarkDay07Part1-16                          	   11031	    108941 ns/op	   24496 B/op	     354 allocs/op
 BenchmarkDay07Part2-16                          	    1047	   1162513 ns/op	   23408 B/op	     279 allocs/op
 BenchmarkDay08Part1-16                          	    8157	    134506 ns/op	  155648 B/op	       1 allocs/op
