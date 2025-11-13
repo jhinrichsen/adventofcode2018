@@ -49,10 +49,7 @@ The package name is `adventofcode2018`.
 |===
 | Day | Tries
 |  1  | (no history available. I just do not remember, and haven't taken notes)
-|  1  |
 |  2  |
-|  2  |
-|  3  |
 |  3  |
 |  4  |
 |  5  |
