@@ -434,7 +434,7 @@ The massive speedup comes from eliminating map operations in the hot path. By pr
 
 Run with `go test -run=^$ -bench=Day..Part.$ -benchmem`
 
-Total: **1.571s**
+Total: 1570682771.00 ns, 1570682.771 µs, 1570.683 ms, **1.571s**
 
 ----
 goos: linux
