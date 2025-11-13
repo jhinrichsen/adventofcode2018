@@ -125,6 +125,54 @@ The optimization is particularly effective for Part 1, achieving zero allocation
 == Day 04: Repose Record
 == Day 05: Alchemical Reduction
 == Day 06: Chronal Coordinates
+
+=== Performance Optimization
+
+Day 06 was optimized by inline byte parsing and eliminating repeated allocations in the distance calculation loop.
+
+==== Baseline (b0)
+Initial implementation used `strings.Split` for parsing and allocated new slices for every grid cell in the `minDist` function. With ~160,000 grid cells and 2 allocations per cell, this resulted in over 250,000 allocations.
+
+==== Optimization (b1)
+Complete rewrite following the blueprint pattern:
+- Inline byte parsing without string operations
+- Single flat grid array instead of 2D slice
+- Reusable distance buffer eliminating per-cell allocations
+- Optimized manhattan distance calculations inline
+- Part 2 achieved zero allocations
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day06_bench_b0.txt │          day06_bench_b1.txt          │
+              │       sec/op       │    sec/op     vs base                │
+Day06Part1-16          45.66m ± 5%    17.31m ± 5%  -62.10% (p=0.000 n=10)
+Day06Part2-16          9.685m ± 4%   11.010m ± 3%  +13.68% (p=0.000 n=10)
+
+              │ day06_bench_b0.txt │            day06_bench_b1.txt             │
+              │        B/op        │     B/op      vs base                     │
+Day06Part1-16       53165.5Ki ± 0%   984.9Ki ± 0%   -98.15% (p=0.000 n=10)
+Day06Part2-16         3.547Ki ± 0%   0.000Ki ± 0%  -100.00% (p=0.000 n=10)
+
+              │ day06_bench_b0.txt │           day06_bench_b1.txt            │
+              │     allocs/op      │ allocs/op   vs base                     │
+Day06Part1-16      255868.000 ± 0%   4.000 ± 0%  -100.00% (p=0.000 n=10)
+Day06Part2-16           57.00 ± 0%    0.00 ± 0%  -100.00% (p=0.000 n=10)
+----
+
+**Key Improvements:**
+
+* **Part 1**: 62.10% faster (45.7ms → 17.3ms)
+* **Part 1**: 98.15% reduction in memory (53MB → 985KB)
+* **Part 1**: 99.998% reduction in allocations (255,868 → 4)
+* **Part 2**: Zero allocations (was 57 allocations)
+
+The dramatic improvement came from eliminating the per-cell allocations in the distance calculation loop. By reusing a single buffer and using inline calculations, Part 1 went from 255,868 allocations down to just 4 (for the main data structures). Part 2 benefits from inline parsing achieving zero allocations.
+
 == Day 07: The Sum of Its Parts
 == Day 08: Memory Maneuver
 == Day 09: Marble Mania
