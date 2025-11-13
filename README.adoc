@@ -81,6 +81,48 @@ The package name is `adventofcode2018`.
 Numbers in (brackets) indicate tries so far (part #2 not solved yet).
 
 == Day 01: Chronal Calibration
+
+=== Performance Optimization
+
+Day 01 was optimized by removing the separate parser and parsing directly from `[]byte` inline within the solver. This eliminates intermediate allocations and reduces function call overhead.
+
+==== Baseline (b0)
+Initial implementation used `NewDay01([]string)` parser that converted strings to integers using `strconv.Atoi()`, then passed the resulting `[]int` slice to the solver.
+
+==== Optimization (b1)
+Removed the parser entirely. The solver now takes `[]byte` directly and parses numbers inline by iterating through bytes, handling `+`/`-` signs, and building integers digit by digit.
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day01_bench_b0.txt │       day01_bench_b1.txt            │
+              │       sec/op       │   sec/op     vs base                │
+Day01Part1-16          8.703µ ± 4%   5.292µ ± 1%  -39.20% (p=0.000 n=10)
+Day01Part2-16          14.97m ± 6%   15.29m ± 3%        ~ (p=0.280 n=10)
+
+              │ day01_bench_b0.txt │          day01_bench_b1.txt           │
+              │        B/op        │     B/op      vs base                 │
+Day01Part1-16         8.000Ki ± 0%   0.000Ki ± 0%  -100.00% (p=0.000 n=10)
+Day01Part2-16         9.028Mi ± 0%   9.020Mi ± 0%    -0.09% (p=0.000 n=10)
+
+              │ day01_bench_b0.txt │         day01_bench_b1.txt            │
+              │     allocs/op      │  allocs/op   vs base                  │
+Day01Part1-16           1.000 ± 0%    0.000 ± 0%  -100.00% (p=0.000 n=10)
+Day01Part2-16          1.044k ± 0%   1.043k ± 0%    -0.10% (p=0.000 n=10)
+----
+
+**Key Improvements:**
+
+* **Part 1**: 39.20% faster (8.7µs → 5.3µs)
+* **Part 1**: Zero allocations (was 1 allocation, 8KB)
+* **Part 2**: Similar performance, one less allocation (1044 → 1043)
+
+The optimization is particularly effective for Part 1, achieving zero allocations by eliminating the intermediate string-to-int conversion step. Part 2's performance remains similar because it's dominated by the map operations for detecting duplicate frequencies.
+
 == Day 02: Inventory Management System
 == Day 03: No Matter How You Slice It
 == Day 04: Repose Record
