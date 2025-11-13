@@ -89,8 +89,20 @@ func reduce(polymer string, unitType rune) string {
 
 func day05Part2(polymer string) int {
 	min := math.MaxInt32
+	polymerBytes := []byte(polymer)
+
 	for ut := range unitTypes(polymer) {
-		l := len(react([]byte(reduce(polymer, ut))))
+		// Filter out the unit type in a single pass
+		filtered := make([]byte, 0, len(polymerBytes))
+		lowerUt := byte(toLower(rune(ut)))
+		upperUt := byte(toUpper(rune(ut)))
+		for _, b := range polymerBytes {
+			if b != lowerUt && b != upperUt {
+				filtered = append(filtered, b)
+			}
+		}
+
+		l := len(react(filtered))
 		if l < min {
 			min = l
 		}

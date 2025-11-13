@@ -7,8 +7,10 @@ import (
 
 // Day15Puzzle represents the battle map.
 type Day15Puzzle struct {
-	grid  [][]byte
-	units []unit
+	grid   [][]byte
+	units  []unit
+	width  int
+	height int
 }
 
 type unit struct {
@@ -51,8 +53,13 @@ func NewDay15(data []byte) (Day15Puzzle, error) {
 	// Build grid and find units
 	grid := make([][]byte, len(lines))
 	var units []unit
+	height := len(lines)
+	width := 0
 
 	for y, line := range lines {
+		if len(line) > width {
+			width = len(line)
+		}
 		grid[y] = make([]byte, len(line))
 		for x := 0; x < len(line); x++ {
 			c := line[x]
@@ -69,40 +76,53 @@ func NewDay15(data []byte) (Day15Puzzle, error) {
 		}
 	}
 
-	return Day15Puzzle{grid: grid, units: units}, nil
+	return Day15Puzzle{grid: grid, units: units, width: width, height: height}, nil
 }
 
 // Day15 simulates the battle.
 // Part 1: Returns the outcome (rounds * remaining HP).
 // Part 2: Returns the outcome with minimum elf attack power for no elf deaths.
-func Day15(puzzle Day15Puzzle, part1 bool) string {
+func Day15(puzzle Day15Puzzle, part1 bool) uint {
 	if part1 {
 		outcome, _ := simulate(puzzle, 3)
-		return fmt.Sprintf("%d", outcome)
+		return outcome
 	}
 
 	// Part 2: Find minimum elf attack power for elves to win with no deaths
 	for elfPower := 4; ; elfPower++ {
 		outcome, allElvesSurvived := simulate(puzzle, elfPower)
 		if allElvesSurvived {
-			return fmt.Sprintf("%d", outcome)
+			return outcome
 		}
 	}
 }
 
 // simulate runs the battle with given elf attack power.
 // Returns (outcome, allElvesSurvived).
-func simulate(puzzle Day15Puzzle, elfAttackPower int) (int, bool) {
+func simulate(puzzle Day15Puzzle, elfAttackPower int) (uint, bool) {
 	// Make copies and set elf attack power
 	units := make([]unit, len(puzzle.units))
 	copy(units, puzzle.units)
 
+	// Build occupancy grid
+	occupied := make([][]bool, puzzle.height)
+	for i := range occupied {
+		occupied[i] = make([]bool, puzzle.width)
+	}
+
 	initialElfCount := 0
 	for i := range units {
+		occupied[units[i].y][units[i].x] = true
 		if units[i].isElf {
 			units[i].attackPower = elfAttackPower
 			initialElfCount++
 		}
+	}
+
+	// Pre-allocate visited array for BFS
+	visited := make([][]bool, puzzle.height)
+	for i := range visited {
+		visited[i] = make([]bool, puzzle.width)
 	}
 
 	rounds := 0
@@ -123,22 +143,28 @@ func simulate(puzzle Day15Puzzle, elfAttackPower int) (int, bool) {
 			}
 
 			// Check if there are any targets
-			targets := findTargets(units, i)
-			if len(targets) == 0 {
+			hasTargets := false
+			for j := range units {
+				if j != i && units[j].hp > 0 && units[j].isElf != units[i].isElf {
+					hasTargets = true
+					break
+				}
+			}
+			if !hasTargets {
 				roundCompleted = false
 				break
 			}
 
 			// Move if not in range of any target
-			adjacent := adjacentEnemies(units, i)
-			if len(adjacent) == 0 {
-				move(puzzle.grid, &units, i, targets)
-				adjacent = adjacentEnemies(units, i)
+			adjIdx := adjacentEnemyIdx(units, i)
+			if adjIdx == -1 {
+				move(puzzle.grid, &units, i, visited, occupied)
+				adjIdx = adjacentEnemyIdx(units, i)
 			}
 
 			// Attack if in range
-			if len(adjacent) > 0 {
-				attack(&units, i, adjacent)
+			if adjIdx >= 0 {
+				attackAt(&units, i, adjIdx, occupied)
 			}
 		}
 
@@ -171,64 +197,88 @@ func simulate(puzzle Day15Puzzle, elfAttackPower int) (int, bool) {
 	}
 
 	allElvesSurvived := (elfCount == initialElfCount)
-	return rounds * totalHP, allElvesSurvived
+	return uint(rounds * totalHP), allElvesSurvived
 }
 
-// findTargets returns indices of enemy units.
-func findTargets(units []unit, idx int) []int {
-	var targets []int
-	for j := range units {
-		if j != idx && units[j].hp > 0 && units[j].isElf != units[idx].isElf {
-			targets = append(targets, j)
-		}
-	}
-	return targets
-}
-
-// adjacentEnemies returns indices of enemies adjacent to the unit.
-func adjacentEnemies(units []unit, idx int) []int {
+// adjacentEnemyIdx returns index of adjacent enemy to attack, or -1 if none.
+// Chooses target with lowest HP, breaking ties by reading order.
+func adjacentEnemyIdx(units []unit, idx int) int {
 	u := units[idx]
-	var adjacent []int
-	for j := range units {
-		if j == idx || units[j].hp <= 0 || units[j].isElf == u.isElf {
-			continue
-		}
-		t := units[j]
-		if abs(t.x-u.x)+abs(t.y-u.y) == 1 {
-			adjacent = append(adjacent, j)
+	bestIdx := -1
+	bestHP := 201
+
+	// Check in reading order: up, left, right, down
+	dirs := []pos{{0, -1}, {-1, 0}, {1, 0}, {0, 1}}
+	for _, d := range dirs {
+		nx, ny := u.x+d.x, u.y+d.y
+		for j := range units {
+			if j == idx || units[j].hp <= 0 || units[j].isElf == u.isElf {
+				continue
+			}
+			t := units[j]
+			if t.x == nx && t.y == ny {
+				if t.hp < bestHP || (t.hp == bestHP && (bestIdx == -1 || readingOrderLess(t.x, t.y, units[bestIdx].x, units[bestIdx].y))) {
+					bestHP = t.hp
+					bestIdx = j
+				}
+			}
 		}
 	}
-	return adjacent
+	return bestIdx
+}
+
+func readingOrderLess(x1, y1, x2, y2 int) bool {
+	if y1 != y2 {
+		return y1 < y2
+	}
+	return x1 < x2
 }
 
 // move moves the unit toward the nearest enemy.
-func move(grid [][]byte, units *[]unit, idx int, targets []int) {
+func move(grid [][]byte, units *[]unit, idx int, visited [][]bool, occupied [][]bool) {
 	u := &(*units)[idx]
 
-	// Find all in-range positions (adjacent to targets)
-	inRangePos := make(map[pos]bool)
-	for _, ti := range targets {
-		t := (*units)[ti]
-		if t.hp <= 0 {
+	// Find all in-range positions (adjacent to enemies)
+	var inRange []pos
+	for j := range *units {
+		if j == idx || (*units)[j].hp <= 0 || (*units)[j].isElf == u.isElf {
 			continue
 		}
+		t := (*units)[j]
 		for _, d := range []pos{{0, -1}, {-1, 0}, {1, 0}, {0, 1}} {
-			np := pos{t.x + d.x, t.y + d.y}
-			if grid[np.y][np.x] == '.' && !occupied(*units, np.x, np.y) {
-				inRangePos[np] = true
+			nx, ny := t.x+d.x, t.y+d.y
+			if ny < 0 || ny >= len(grid) || nx < 0 || nx >= len(grid[ny]) {
+				continue
+			}
+			if grid[ny][nx] == '.' && !occupied[ny][nx] {
+				// Check if already in list
+				found := false
+				for _, p := range inRange {
+					if p.x == nx && p.y == ny {
+						found = true
+						break
+					}
+				}
+				if !found {
+					inRange = append(inRange, pos{nx, ny})
+				}
 			}
 		}
 	}
 
-	if len(inRangePos) == 0 {
+	if len(inRange) == 0 {
 		return
 	}
 
 	// BFS to find nearest reachable in-range position
-	nearest := bfs(grid, *units, pos{u.x, u.y}, inRangePos)
-	if nearest == nil {
+	nearest := bfs(grid, pos{u.x, u.y}, inRange, visited, occupied)
+	if nearest.x == -1 {
 		return
 	}
+
+	// Update occupancy grid
+	occupied[u.y][u.x] = false
+	occupied[nearest.y][nearest.x] = true
 
 	// Move one step toward nearest
 	u.x = nearest.x
@@ -236,9 +286,19 @@ func move(grid [][]byte, units *[]unit, idx int, targets []int) {
 }
 
 // bfs finds the next step to move toward any target position.
-func bfs(grid [][]byte, units []unit, start pos, targets map[pos]bool) *pos {
-	if targets[start] {
-		return nil // Already at target
+func bfs(grid [][]byte, start pos, targets []pos, visited [][]bool, occupied [][]bool) pos {
+	// Clear visited array
+	for y := range visited {
+		for x := range visited[y] {
+			visited[y][x] = false
+		}
+	}
+
+	// Check if already at target
+	for _, t := range targets {
+		if start.x == t.x && start.y == t.y {
+			return pos{-1, -1}
+		}
 	}
 
 	type state struct {
@@ -247,9 +307,9 @@ func bfs(grid [][]byte, units []unit, start pos, targets map[pos]bool) *pos {
 		firstStep pos
 	}
 
-	visited := make(map[pos]bool)
-	queue := []state{{pos: start, dist: 0}}
-	visited[start] = true
+	queue := make([]state, 0, 256)
+	queue = append(queue, state{pos: start, dist: 0})
+	visited[start.y][start.x] = true
 
 	var reachable []state
 	minDist := -1
@@ -265,23 +325,25 @@ func bfs(grid [][]byte, units []unit, start pos, targets map[pos]bool) *pos {
 
 		// Check all neighbors in reading order
 		for _, d := range []pos{{0, -1}, {-1, 0}, {1, 0}, {0, 1}} {
-			np := pos{curr.pos.x + d.x, curr.pos.y + d.y}
+			nx, ny := curr.pos.x+d.x, curr.pos.y+d.y
 
 			// Check bounds
-			if np.y < 0 || np.y >= len(grid) || np.x < 0 || np.x >= len(grid[np.y]) {
+			if ny < 0 || ny >= len(grid) || nx < 0 || nx >= len(grid[ny]) {
 				continue
 			}
 
 			// Check if valid move
-			if grid[np.y][np.x] != '.' || occupied(units, np.x, np.y) {
+			if grid[ny][nx] != '.' || occupied[ny][nx] {
 				continue
 			}
 
 			// Skip if already visited
-			if visited[np] {
+			if visited[ny][nx] {
 				continue
 			}
-			visited[np] = true
+			visited[ny][nx] = true
+
+			np := pos{nx, ny}
 
 			// Determine first step
 			firstStep := curr.firstStep
@@ -291,8 +353,16 @@ func bfs(grid [][]byte, units []unit, start pos, targets map[pos]bool) *pos {
 
 			newDist := curr.dist + 1
 
-			// If this is a target, record it
-			if targets[np] {
+			// Check if this is a target
+			isTarget := false
+			for _, t := range targets {
+				if np.x == t.x && np.y == t.y {
+					isTarget = true
+					break
+				}
+			}
+
+			if isTarget {
 				if minDist < 0 {
 					minDist = newDist
 				}
@@ -307,7 +377,7 @@ func bfs(grid [][]byte, units []unit, start pos, targets map[pos]bool) *pos {
 	}
 
 	if len(reachable) == 0 {
-		return nil
+		return pos{-1, -1}
 	}
 
 	// Sort by target position (reading order), then by first step (reading order)
@@ -327,43 +397,18 @@ func bfs(grid [][]byte, units []unit, start pos, targets map[pos]bool) *pos {
 		return ri.firstStep.x < rj.firstStep.x
 	})
 
-	result := reachable[0].firstStep
-	return &result
+	return reachable[0].firstStep
 }
 
-// occupied checks if a position is occupied by a living unit.
-func occupied(units []unit, x, y int) bool {
-	for _, u := range units {
-		if u.hp > 0 && u.x == x && u.y == y {
-			return true
-		}
+// attackAt attacks the enemy at the given index.
+func attackAt(units *[]unit, attackerIdx, targetIdx int, occupied [][]bool) {
+	u := (*units)[attackerIdx]
+	target := &(*units)[targetIdx]
+
+	target.hp -= u.attackPower
+	if target.hp <= 0 {
+		occupied[target.y][target.x] = false
 	}
-	return false
-}
-
-// attack attacks an adjacent enemy with lowest HP.
-func attack(units *[]unit, idx int, adjacent []int) {
-	u := (*units)[idx]
-
-	if len(adjacent) == 0 {
-		return
-	}
-
-	// Choose target with lowest HP (ties by reading order)
-	sort.Slice(adjacent, func(i, j int) bool {
-		ti, tj := (*units)[adjacent[i]], (*units)[adjacent[j]]
-		if ti.hp != tj.hp {
-			return ti.hp < tj.hp
-		}
-		if ti.y != tj.y {
-			return ti.y < tj.y
-		}
-		return ti.x < tj.x
-	})
-
-	// Deal damage
-	target := adjacent[0]
-	(*units)[target].hp -= u.attackPower
 }
 
 func abs(x int) int {

@@ -6,7 +6,7 @@ func TestDay15Part1Examples(t *testing.T) {
 	tests := []struct {
 		name string
 		map_ string
-		want string
+		want uint
 	}{
 		{
 			name: "main example",
@@ -17,7 +17,7 @@ func TestDay15Part1Examples(t *testing.T) {
 #..G#E#
 #.....#
 #######`,
-			want: "27730",
+			want: 27730,
 		},
 		{
 			name: "example 1",
@@ -28,7 +28,7 @@ func TestDay15Part1Examples(t *testing.T) {
 #...#E#
 #...E.#
 #######`,
-			want: "36334",
+			want: 36334,
 		},
 		{
 			name: "example 2",
@@ -39,7 +39,7 @@ func TestDay15Part1Examples(t *testing.T) {
 #G..#.#
 #..E#.#
 #######`,
-			want: "39514",
+			want: 39514,
 		},
 		{
 			name: "example 3",
@@ -50,7 +50,7 @@ func TestDay15Part1Examples(t *testing.T) {
 #G..#.#
 #...E.#
 #######`,
-			want: "27755",
+			want: 27755,
 		},
 		{
 			name: "example 4",
@@ -61,7 +61,7 @@ func TestDay15Part1Examples(t *testing.T) {
 #E#G#G#
 #...#G#
 #######`,
-			want: "28944",
+			want: 28944,
 		},
 		{
 			name: "example 5",
@@ -74,7 +74,7 @@ func TestDay15Part1Examples(t *testing.T) {
 #.G...G.#
 #.....G.#
 #########`,
-			want: "18740",
+			want: 18740,
 		},
 	}
 
@@ -86,14 +86,14 @@ func TestDay15Part1Examples(t *testing.T) {
 			}
 			got := Day15(puzzle, true)
 			if got != tt.want {
-				t.Errorf("want %s but got %s", tt.want, got)
+				t.Errorf("want %d but got %d", tt.want, got)
 			}
 		})
 	}
 }
 
 func TestDay15Part1(t *testing.T) {
-	testWithParserBytes(t, 15, file, true, NewDay15, Day15, "207542")
+	testWithParserBytes(t, 15, file, true, NewDay15, Day15, uint(207542))
 }
 
 func BenchmarkDay15Part1(b *testing.B) {
@@ -104,7 +104,7 @@ func TestDay15Part2Examples(t *testing.T) {
 	tests := []struct {
 		name string
 		map_ string
-		want string
+		want uint
 	}{
 		{
 			name: "main example",
@@ -115,7 +115,7 @@ func TestDay15Part2Examples(t *testing.T) {
 #..G#E#
 #.....#
 #######`,
-			want: "4988",
+			want: 4988,
 		},
 		{
 			name: "example 1",
@@ -126,7 +126,7 @@ func TestDay15Part2Examples(t *testing.T) {
 #G..#.#
 #..E#.#
 #######`,
-			want: "31284",
+			want: 31284,
 		},
 		{
 			name: "example 2",
@@ -137,7 +137,7 @@ func TestDay15Part2Examples(t *testing.T) {
 #G..#.#
 #...E.#
 #######`,
-			want: "3478",
+			want: 3478,
 		},
 		{
 			name: "example 3",
@@ -148,7 +148,7 @@ func TestDay15Part2Examples(t *testing.T) {
 #E#G#G#
 #...#G#
 #######`,
-			want: "6474",
+			want: 6474,
 		},
 		{
 			name: "example 4",
@@ -161,7 +161,7 @@ func TestDay15Part2Examples(t *testing.T) {
 #.G...G.#
 #.....G.#
 #########`,
-			want: "1140",
+			want: 1140,
 		},
 	}
 
@@ -173,14 +173,14 @@ func TestDay15Part2Examples(t *testing.T) {
 			}
 			got := Day15(puzzle, false)
 			if got != tt.want {
-				t.Errorf("want %s but got %s", tt.want, got)
+				t.Errorf("want %d but got %d", tt.want, got)
 			}
 		})
 	}
 }
 
 func TestDay15Part2(t *testing.T) {
-	testWithParserBytes(t, 15, file, false, NewDay15, Day15, "64688")
+	testWithParserBytes(t, 15, file, false, NewDay15, Day15, uint(64688))
 }
 
 func BenchmarkDay15Part2(b *testing.B) {

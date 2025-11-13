@@ -3,13 +3,33 @@ package adventofcode2018
 // Day19Puzzle represents the device program.
 type Day19Puzzle struct {
 	ipReg        int
-	instructions []instruction
+	instructions []instruction19
 }
 
-type instruction struct {
-	opcode  string
+type instruction19 struct {
+	opcode  uint8 // Opcode ID (0-15)
 	a, b, c int
 }
+
+// Opcode constants
+const (
+	opAddr uint8 = iota
+	opAddi
+	opMulr
+	opMuli
+	opBanr
+	opBani
+	opBorr
+	opBori
+	opSetr
+	opSeti
+	opGtir
+	opGtri
+	opGtrr
+	opEqir
+	opEqri
+	opEqrr
+)
 
 // NewDay19 parses the program.
 func NewDay19(data []byte) (Day19Puzzle, error) {
@@ -17,7 +37,7 @@ func NewDay19(data []byte) (Day19Puzzle, error) {
 	i := 0
 
 	var ipReg int
-	var instructions []instruction
+	var instructions []instruction19
 
 	// Parse #ip line
 	if i+4 <= n && string(data[i:i+4]) == "#ip " {
@@ -43,7 +63,77 @@ func NewDay19(data []byte) (Day19Puzzle, error) {
 		if i == opcodeStart {
 			break
 		}
-		opcode := string(data[opcodeStart:i])
+
+		// Convert opcode string to ID
+		var opcodeID uint8
+		opcodeLen := i - opcodeStart
+		if opcodeLen >= 4 {
+			// Check first 4 chars to determine opcode
+			switch data[opcodeStart] {
+			case 'a':
+				if data[opcodeStart+1] == 'd' && data[opcodeStart+2] == 'd' {
+					if data[opcodeStart+3] == 'r' {
+						opcodeID = opAddr
+					} else {
+						opcodeID = opAddi
+					}
+				}
+			case 'm':
+				if data[opcodeStart+1] == 'u' && data[opcodeStart+2] == 'l' {
+					if data[opcodeStart+3] == 'r' {
+						opcodeID = opMulr
+					} else {
+						opcodeID = opMuli
+					}
+				}
+			case 'b':
+				if data[opcodeStart+1] == 'a' && data[opcodeStart+2] == 'n' {
+					if data[opcodeStart+3] == 'r' {
+						opcodeID = opBanr
+					} else {
+						opcodeID = opBani
+					}
+				} else if data[opcodeStart+1] == 'o' && data[opcodeStart+2] == 'r' {
+					if data[opcodeStart+3] == 'r' {
+						opcodeID = opBorr
+					} else {
+						opcodeID = opBori
+					}
+				}
+			case 's':
+				if data[opcodeStart+1] == 'e' && data[opcodeStart+2] == 't' {
+					if data[opcodeStart+3] == 'r' {
+						opcodeID = opSetr
+					} else {
+						opcodeID = opSeti
+					}
+				}
+			case 'g':
+				if data[opcodeStart+1] == 't' {
+					if data[opcodeStart+2] == 'i' {
+						opcodeID = opGtir
+					} else if data[opcodeStart+2] == 'r' {
+						if data[opcodeStart+3] == 'i' {
+							opcodeID = opGtri
+						} else {
+							opcodeID = opGtrr
+						}
+					}
+				}
+			case 'e':
+				if data[opcodeStart+1] == 'q' {
+					if data[opcodeStart+2] == 'i' {
+						opcodeID = opEqir
+					} else if data[opcodeStart+2] == 'r' {
+						if data[opcodeStart+3] == 'i' {
+							opcodeID = opEqri
+						} else {
+							opcodeID = opEqrr
+						}
+					}
+				}
+			}
+		}
 
 		// Skip space
 		if i < n && data[i] == ' ' {
@@ -77,7 +167,7 @@ func NewDay19(data []byte) (Day19Puzzle, error) {
 			i++
 		}
 
-		instructions = append(instructions, instruction{opcode: opcode, a: a, b: b, c: c})
+		instructions = append(instructions, instruction19{opcode: opcodeID, a: a, b: b, c: c})
 
 		// Skip newline
 		for i < n && (data[i] == '\n' || data[i] == '\r') {
@@ -98,14 +188,6 @@ func Day19(puzzle Day19Puzzle, part1 bool) uint {
 		regs[0] = 1
 	}
 
-	opcodes := map[string]func([6]int, int, int, int) [6]int{
-		"addr": addr19, "addi": addi19, "mulr": mulr19, "muli": muli19,
-		"banr": banr19, "bani": bani19, "borr": borr19, "bori": bori19,
-		"setr": setr19, "seti": seti19,
-		"gtir": gtir19, "gtri": gtri19, "gtrr": gtrr19,
-		"eqir": eqir19, "eqri": eqri19, "eqrr": eqrr19,
-	}
-
 	ip := 0
 
 	// For Part 2, the program computes sum of divisors of a large number.
@@ -122,7 +204,7 @@ func Day19(puzzle Day19Puzzle, part1 bool) uint {
 
 			// Execute instruction
 			inst := puzzle.instructions[ip]
-			regs = opcodes[inst.opcode](regs, inst.a, inst.b, inst.c)
+			executeOpcode(inst.opcode, &regs, inst.a, inst.b, inst.c)
 
 			// Read IP from bound register and increment
 			ip = regs[puzzle.ipReg]
@@ -150,7 +232,7 @@ func Day19(puzzle Day19Puzzle, part1 bool) uint {
 
 		// Execute instruction
 		inst := puzzle.instructions[ip]
-		regs = opcodes[inst.opcode](regs, inst.a, inst.b, inst.c)
+		executeOpcode(inst.opcode, &regs, inst.a, inst.b, inst.c)
 
 		// Read IP from bound register and increment
 		ip = regs[puzzle.ipReg]
@@ -160,110 +242,66 @@ func Day19(puzzle Day19Puzzle, part1 bool) uint {
 	return uint(regs[0])
 }
 
-// Opcode implementations for 6 registers
-
-func addr19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] + regs[b]
-	return regs
-}
-
-func addi19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] + b
-	return regs
-}
-
-func mulr19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] * regs[b]
-	return regs
-}
-
-func muli19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] * b
-	return regs
-}
-
-func banr19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] & regs[b]
-	return regs
-}
-
-func bani19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] & b
-	return regs
-}
-
-func borr19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] | regs[b]
-	return regs
-}
-
-func bori19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a] | b
-	return regs
-}
-
-func setr19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = regs[a]
-	return regs
-}
-
-func seti19(regs [6]int, a, b, c int) [6]int {
-	regs[c] = a
-	return regs
-}
-
-func gtir19(regs [6]int, a, b, c int) [6]int {
-	if a > regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
+// executeOpcode executes an opcode with inline implementation
+func executeOpcode(op uint8, regs *[6]int, a, b, c int) {
+	switch op {
+	case opAddr:
+		regs[c] = regs[a] + regs[b]
+	case opAddi:
+		regs[c] = regs[a] + b
+	case opMulr:
+		regs[c] = regs[a] * regs[b]
+	case opMuli:
+		regs[c] = regs[a] * b
+	case opBanr:
+		regs[c] = regs[a] & regs[b]
+	case opBani:
+		regs[c] = regs[a] & b
+	case opBorr:
+		regs[c] = regs[a] | regs[b]
+	case opBori:
+		regs[c] = regs[a] | b
+	case opSetr:
+		regs[c] = regs[a]
+	case opSeti:
+		regs[c] = a
+	case opGtir:
+		if a > regs[b] {
+			regs[c] = 1
+		} else {
+			regs[c] = 0
+		}
+	case opGtri:
+		if regs[a] > b {
+			regs[c] = 1
+		} else {
+			regs[c] = 0
+		}
+	case opGtrr:
+		if regs[a] > regs[b] {
+			regs[c] = 1
+		} else {
+			regs[c] = 0
+		}
+	case opEqir:
+		if a == regs[b] {
+			regs[c] = 1
+		} else {
+			regs[c] = 0
+		}
+	case opEqri:
+		if regs[a] == b {
+			regs[c] = 1
+		} else {
+			regs[c] = 0
+		}
+	case opEqrr:
+		if regs[a] == regs[b] {
+			regs[c] = 1
+		} else {
+			regs[c] = 0
+		}
 	}
-	return regs
-}
-
-func gtri19(regs [6]int, a, b, c int) [6]int {
-	if regs[a] > b {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
-}
-
-func gtrr19(regs [6]int, a, b, c int) [6]int {
-	if regs[a] > regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
-}
-
-func eqir19(regs [6]int, a, b, c int) [6]int {
-	if a == regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
-}
-
-func eqri19(regs [6]int, a, b, c int) [6]int {
-	if regs[a] == b {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
-}
-
-func eqrr19(regs [6]int, a, b, c int) [6]int {
-	if regs[a] == regs[b] {
-		regs[c] = 1
-	} else {
-		regs[c] = 0
-	}
-	return regs
 }
 
 // sumOfDivisors calculates the sum of all divisors of n (including 1 and n).
