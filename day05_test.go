@@ -81,12 +81,6 @@ func unitTypes(polymer string) map[rune]bool {
 	return m
 }
 
-func reduce(polymer string, unitType rune) string {
-	polymer = strings.Replace(polymer, string(toLower(unitType)), "", -1)
-	polymer = strings.Replace(polymer, string(toUpper(unitType)), "", -1)
-	return polymer
-}
-
 func day05Part2(polymer string) int {
 	min := math.MaxInt32
 	polymerBytes := []byte(polymer)
