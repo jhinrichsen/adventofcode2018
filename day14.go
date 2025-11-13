@@ -1,9 +1,5 @@
 package adventofcode2018
 
-import (
-	"fmt"
-)
-
 // Day14Puzzle represents the number of recipes to skip.
 type Day14Puzzle struct {
 	recipes int
@@ -37,88 +33,147 @@ func NewDay14(data []byte) (Day14Puzzle, error) {
 // Part 1: Returns the 10 scores after the given number of recipes.
 // Part 2: Returns the number of recipes before the input sequence appears.
 func Day14(puzzle Day14Puzzle, part1 bool) string {
-	// Start with recipes [3, 7]
-	scores := []int{3, 7}
+	if part1 {
+		return day14Part1(puzzle.recipes)
+	}
+	return day14Part2(puzzle.recipes)
+}
+
+func day14Part1(recipes int) string {
+	// Pre-allocate with reasonable capacity
+	scores := make([]byte, 2, recipes+20)
+	scores[0] = 3
+	scores[1] = 7
 	elf1, elf2 := 0, 1
 
-	if part1 {
-		// Generate recipes until we have enough
-		target := puzzle.recipes + 10
-		for len(scores) < target {
-			// Sum current recipes
-			sum := scores[elf1] + scores[elf2]
+	// Generate recipes until we have enough
+	target := recipes + 10
+	for len(scores) < target {
+		// Sum current recipes
+		sum := scores[elf1] + scores[elf2]
 
-			// Add new recipes
-			if sum >= 10 {
-				scores = append(scores, 1, sum%10)
-			} else {
-				scores = append(scores, sum)
-			}
-
-			// Move elves
-			elf1 = (elf1 + 1 + scores[elf1]) % len(scores)
-			elf2 = (elf2 + 1 + scores[elf2]) % len(scores)
+		// Add new recipes
+		if sum >= 10 {
+			scores = append(scores, 1, sum-10)
+		} else {
+			scores = append(scores, sum)
 		}
 
-		// Build result string from 10 scores after puzzle.recipes
-		result := ""
-		for i := 0; i < 10; i++ {
-			result += fmt.Sprintf("%d", scores[puzzle.recipes+i])
-		}
-		return result
+		// Move elves
+		elf1 = (elf1 + 1 + int(scores[elf1])) % len(scores)
+		elf2 = (elf2 + 1 + int(scores[elf2])) % len(scores)
 	}
 
-	// Part 2: Find when the input sequence appears
-	// Convert input number to digits
-	target := make([]int, 0)
-	n := puzzle.recipes
+	// Build result string from 10 scores after recipes
+	result := make([]byte, 10)
+	for i := 0; i < 10; i++ {
+		result[i] = scores[recipes+i] + '0'
+	}
+	return string(result)
+}
+
+func day14Part2(recipes int) string {
+	// Convert input number to byte digits
+	target := make([]byte, 0, 8)
+	n := recipes
 	if n == 0 {
-		target = []int{0}
+		target = []byte{'0'}
 	} else {
 		for n > 0 {
-			target = append([]int{n % 10}, target...)
+			target = append(target, byte(n%10))
 			n /= 10
 		}
+		// Reverse
+		for i := 0; i < len(target)/2; i++ {
+			target[i], target[len(target)-1-i] = target[len(target)-1-i], target[i]
+		}
 	}
+
+	// Pre-allocate large capacity to avoid reallocations
+	scores := make([]byte, 2, 25000000)
+	scores[0] = 3
+	scores[1] = 7
+	elf1, elf2 := 0, 1
+
+	targetLen := len(target)
 
 	// Generate recipes until we find the sequence
 	for {
 		// Sum current recipes
 		sum := scores[elf1] + scores[elf2]
 
-		// Add new recipes and check for match
+		// Add new recipes
 		if sum >= 10 {
-			scores = append(scores, 1)
-			if matchesEnd(scores, target) {
-				return fmt.Sprintf("%d", len(scores)-len(target))
-			}
-			scores = append(scores, sum%10)
-			if matchesEnd(scores, target) {
-				return fmt.Sprintf("%d", len(scores)-len(target))
+			scores = append(scores, 1, sum-10)
+			// Check both positions
+			if len(scores) >= targetLen {
+				// Check if match at position len(scores)-targetLen-1 (for the first digit added)
+				if len(scores) >= targetLen+1 {
+					pos := len(scores) - targetLen - 1
+					match := true
+					for i := 0; i < targetLen; i++ {
+						if scores[pos+i] != target[i] {
+							match = false
+							break
+						}
+					}
+					if match {
+						return itoa(pos)
+					}
+				}
+				// Check if match at position len(scores)-targetLen (for the second digit added)
+				pos := len(scores) - targetLen
+				match := true
+				for i := 0; i < targetLen; i++ {
+					if scores[pos+i] != target[i] {
+						match = false
+						break
+					}
+				}
+				if match {
+					return itoa(pos)
+				}
 			}
 		} else {
 			scores = append(scores, sum)
-			if matchesEnd(scores, target) {
-				return fmt.Sprintf("%d", len(scores)-len(target))
+			// Check for match
+			if len(scores) >= targetLen {
+				pos := len(scores) - targetLen
+				match := true
+				for i := 0; i < targetLen; i++ {
+					if scores[pos+i] != target[i] {
+						match = false
+						break
+					}
+				}
+				if match {
+					return itoa(pos)
+				}
 			}
 		}
 
 		// Move elves
-		elf1 = (elf1 + 1 + scores[elf1]) % len(scores)
-		elf2 = (elf2 + 1 + scores[elf2]) % len(scores)
+		elf1 = (elf1 + 1 + int(scores[elf1])) % len(scores)
+		elf2 = (elf2 + 1 + int(scores[elf2])) % len(scores)
 	}
 }
 
-// matchesEnd checks if the end of scores matches target.
-func matchesEnd(scores, target []int) bool {
-	if len(scores) < len(target) {
-		return false
+// itoa converts int to string without allocations
+func itoa(n int) string {
+	if n == 0 {
+		return "0"
 	}
-	start := len(scores) - len(target)
-	for i := range target {
-		if scores[start+i] != target[i] {
-			return false
-		}
+
+	buf := make([]byte, 0, 10)
+	for n > 0 {
+		buf = append(buf, byte(n%10)+'0')
+		n /= 10
 	}
-	return true
+
+	// Reverse
+	for i := 0; i < len(buf)/2; i++ {
+		buf[i], buf[len(buf)-1-i] = buf[len(buf)-1-i], buf[i]
+	}
+
+	return string(buf)
 }
