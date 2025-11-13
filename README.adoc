@@ -135,6 +135,7 @@ Initial implementation used `strings.Split` for parsing and allocated new slices
 
 ==== Optimization (b1)
 Complete rewrite following the blueprint pattern:
+
 - Inline byte parsing without string operations
 - Single flat grid array instead of 2D slice
 - Reusable distance buffer eliminating per-cell allocations
