@@ -301,6 +301,59 @@ The dramatic improvements come from using byte storage instead of integers (4x m
 == Day 20: A Regular Map
 == Day 21: Chronal Conversion
 == Day 22: Mode Maze
+
+=== Performance Optimization
+
+Day 22 was optimized by replacing map-based data structures with pre-allocated arrays for Dijkstra's pathfinding algorithm.
+
+==== Baseline (b0)
+Initial implementation used maps for all data structures: `map[state]int` for distances, `map[state]bool` for visited states, and `map[pos]int` for erosion cache. Part 2 performed Dijkstra's algorithm with 1M+ map operations, resulting in significant overhead.
+
+==== Optimization (b1)
+Replaced maps with fixed-size arrays based on bounded search space:
+
+- Pre-compute all erosion levels in a 2D array (`[][]int`)
+- Use 3D arrays for distances and visited states (`[][][3]int` and `[][][3]bool`)
+- Eliminated state struct and map lookups
+- Part 1: Changed from recursive to iterative erosion calculation
+- Pre-allocate search space bounds (target * 2 in each dimension)
+
+==== Results
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: Intel(R) Xeon(R) CPU @ 2.60GHz
+              │ day22_bench_b0.txt │         day22_bench_b1.txt          │
+              │       sec/op       │   sec/op     vs base                │
+Day22Part1-16         1906.3µ ± 2%   117.7µ ± 3%  -93.82% (p=0.000 n=10)
+Day22Part2-16        2314.04m ± 9%   54.69m ± 3%  -97.64% (p=0.000 n=10)
+geomean                66.42m        2.538m       -96.18%
+
+              │ day22_bench_b0.txt │          day22_bench_b1.txt          │
+              │        B/op        │     B/op      vs base                │
+Day22Part1-16         853.2Ki ± 0%   110.7Ki ± 0%  -87.02% (p=0.000 n=10)
+Day22Part2-16        235.06Mi ± 0%   14.27Mi ± 0%  -93.93% (p=0.000 n=10)
+geomean               14.00Mi        1.242Mi       -91.12%
+
+              │ day22_bench_b0.txt │          day22_bench_b1.txt          │
+              │     allocs/op      │  allocs/op   vs base                 │
+Day22Part1-16           81.00 ± 0%   744.00 ± 0%  +818.52% (p=0.000 n=10)
+Day22Part2-16         1056.8k ± 0%   193.0k ± 0%   -81.73% (p=0.000 n=10)
+geomean                9.252k        11.98k        +29.53%
+----
+
+**Key Improvements:**
+
+* **Part 1**: 93.82% faster (1.9ms → 118μs)
+* **Part 1**: 87.02% reduction in memory (853KB → 111KB)
+* **Part 2**: 97.64% faster (2.31s → 54.7ms)
+* **Part 2**: 93.93% reduction in memory (235MB → 14MB)
+* **Part 2**: 81.73% reduction in allocations (1.06M → 193k)
+
+The massive speedup comes from eliminating map operations in the hot path. By pre-allocating fixed arrays and using direct indexing instead of hash lookups, Part 2's Dijkstra search runs 40x faster. The bounded search space (target dimensions * 2) allows for efficient array-based storage. This optimization saves ~2.26 seconds from the total benchmark runtime.
+
 == Day 23: Experimental Emergency Teleportation
 == Day 24: Immune System Simulator 20XX
 == Day 25: Four-Dimensional Adventure
