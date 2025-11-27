@@ -1,7 +1,3 @@
-.vscode
-builds/
-debug.test
-
-# Benchmark artifacts (interim work files)
-day*_bench_b*.txt
-current_benchmarks.txt
+.cpuname
+.vscode/
+target/
