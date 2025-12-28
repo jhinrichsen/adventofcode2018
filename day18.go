@@ -53,57 +53,43 @@ func NewDay18(data []byte) (Day18Puzzle, error) {
 	}, nil
 }
 
-// countAdjacent counts how many of the 8 neighbors match the target character.
-func countAdjacent(grid []byte, width, height, x, y int, target byte) uint {
-	count := uint(0)
-	for dy := -1; dy <= 1; dy++ {
-		for dx := -1; dx <= 1; dx++ {
-			if dx == 0 && dy == 0 {
-				continue
-			}
-			nx, ny := x+dx, y+dy
-			if nx >= 0 && nx < width && ny >= 0 && ny < height {
-				if grid[ny*width+nx] == target {
-					count++
-				}
-			}
-		}
-	}
-	return count
-}
-
-// step simulates one minute of the lumber collection area.
+// step simulates one minute using C8Indices for neighbor iteration.
 func step(grid []byte, width, height int) []byte {
 	next := make([]byte, len(grid))
-	for y := range height {
-		for x := range width {
-			idx := y*width + x
-			current := grid[idx]
+	g := Grid{W: width, H: height}
 
-			switch current {
-			case '.': // open ground
-				// Becomes trees if 3+ adjacent are trees
-				if countAdjacent(grid, width, height, x, y, '|') >= 3 {
-					next[idx] = '|'
-				} else {
-					next[idx] = '.'
-				}
-			case '|': // trees
-				// Becomes lumberyard if 3+ adjacent are lumberyards
-				if countAdjacent(grid, width, height, x, y, '#') >= 3 {
-					next[idx] = '#'
-				} else {
-					next[idx] = '|'
-				}
-			case '#': // lumberyard
-				// Stays lumberyard if adjacent to at least 1 lumberyard AND 1 trees
-				// Otherwise becomes open ground
-				if countAdjacent(grid, width, height, x, y, '#') >= 1 &&
-					countAdjacent(grid, width, height, x, y, '|') >= 1 {
-					next[idx] = '#'
-				} else {
-					next[idx] = '.'
-				}
+	for idx, nbrs := range g.C8Indices() {
+		current := grid[idx]
+
+		// Count trees and lumberyards in single pass
+		var trees, lumberyards uint
+		for nidx := range nbrs {
+			switch grid[nidx] {
+			case '|':
+				trees++
+			case '#':
+				lumberyards++
+			}
+		}
+
+		switch current {
+		case '.': // open ground -> trees if 3+ adjacent trees
+			if trees >= 3 {
+				next[idx] = '|'
+			} else {
+				next[idx] = '.'
+			}
+		case '|': // trees -> lumberyard if 3+ adjacent lumberyards
+			if lumberyards >= 3 {
+				next[idx] = '#'
+			} else {
+				next[idx] = '|'
+			}
+		case '#': // lumberyard -> stays if 1+ lumberyard AND 1+ trees
+			if lumberyards >= 1 && trees >= 1 {
+				next[idx] = '#'
+			} else {
+				next[idx] = '.'
 			}
 		}
 	}
