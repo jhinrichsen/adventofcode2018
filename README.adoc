@@ -423,6 +423,26 @@ The dramatic improvement came from eliminating the hot-path map allocations in B
 == Day 16: Chronal Classification
 == Day 17: Reservoir Research
 == Day 18: Settlers of The North Pole
+
+=== iter.Seq Optimization
+
+Refactored to use `C8Indices` iterator from `grid.go` for neighbor iteration without bounds checking. The iterator provides pre-computed 8-connectivity neighbor indices for each cell.
+
+Additional optimization: count trees and lumberyards in a single pass instead of calling `countAdjacent` twice for lumberyard cells.
+
+----
+goos: linux
+goarch: amd64
+pkg: gitlab.com/jhinrichsen/adventofcode2018
+cpu: AMD Ryzen 7 7840HS w/ Radeon 780M Graphics
+                     │   original   │              C8Indices              │
+                     │    sec/op    │   sec/op     vs base                │
+Day18Part1-16           441.0µ ± 2%   299.0µ ± 1%  -32.20%
+Day18Part2-16           18.56ms ± 0%   8.42ms ± 1%  -54.63%
+----
+
+Part 1: 1.5x faster, Part 2: 2.2x faster
+
 == Day 19: Go With The Flow
 
 === Performance Optimization
